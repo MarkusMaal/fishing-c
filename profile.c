@@ -199,3 +199,58 @@ unsigned int crc32(const char *dataPtr, size_t dataSize)
     }
     return crc ^ 0xffffffff;
 }
+
+char *getObString(int idx)
+{
+    char c = 0;
+    Record r;
+    FILE *infile;
+    infile = fopen("txt/solmn.dat", "rb");
+    fread(&r, sizeof(Record), 1, infile);
+    fseek(infile, 0x10 + r.chunkSize * idx, SEEK_SET);
+    char source[0x20];
+    char *output = malloc(0x20);
+    fread(&source, r.chunkSize, 1, infile);
+    fclose(infile);
+    int pos = 0;
+    while (pos < 0x20)
+    {
+        c = source[pos];
+        if (c == -1)
+            break;
+        if (c < 26)
+        {
+            output[pos] = 65 + c;
+        }
+        else if (c >= 26 && c < 52)
+        {
+            output[pos] = 97 + (c - 26);
+        }
+        else
+        {
+            switch (c)
+            {
+            case 52:
+                output[pos] = 0x20;
+                break;
+            case 53:
+                output[pos] = 0x21;
+                break;
+            case 54:
+                output[pos] = 0x27;
+                break;
+            case 55:
+                output[pos] = 0x2E;
+                break;
+            case 56:
+                output[pos] = 0x2C;
+                break;
+            default:
+                break;
+            }
+        }
+        pos++;
+    };
+    output[pos] = 0x00;
+    return output;
+}

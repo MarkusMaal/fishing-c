@@ -89,5 +89,6 @@ void initProfile(int idx);
 void saveActiveProfile();
 void profileMenu();
 unsigned int crc32(const char *dataPtr, size_t dataSize);
+char *getObString(int idx);
 
 #endif
