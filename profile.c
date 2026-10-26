@@ -3,7 +3,30 @@
 PlayerProfile profiles[8];
 int activeProfile = 0;
 
-void loadProfile(int idx)
+ProfileHeader quickLoadProfile(int idx)
+{
+    char buf[32];
+    snprintf(buf, 32, "save/profile%d.dat", idx + 1);
+    FILE *infile;
+    infile = fopen(buf, "rb");
+    ProfileHeader header;
+    if (infile == NULL)
+    {
+        return (ProfileHeader){
+            "Free slot",
+            "Start a new game",
+            "And load here later"};
+    }
+    fseek(infile, 4, SEEK_SET);
+    fread(&header, sizeof(ProfileHeader), 1, infile);
+    fclose(infile);
+    header.qName[0x1F] = 0;
+    header.saveDate[0x1F] = 0;
+    header.saveTime[0x1F] = 0;
+    return header;
+}
+
+int loadProfile(int idx)
 {
     char buf[32];
     snprintf(buf, 32, "save/profile%d.dat", idx + 1);
@@ -11,13 +34,32 @@ void loadProfile(int idx)
     infile = fopen(buf, "rb");
     if (infile == NULL)
     {
-        initProfiles();
-        return;
+        initProfile(idx);
+        return 0;
     }
+    unsigned int onlineSum;
+    fseek(infile, 0, SEEK_SET);
+    fread(&onlineSum, sizeof(unsigned int), 1, infile);
+    // free(rawData);
+    fseek(infile, 4, SEEK_SET);
     fread(&profiles[idx], sizeof(PlayerProfile), 1, infile);
+    unsigned int offlineSum = crc32((char *)&profiles[idx], sizeof(PlayerProfile));
+    if (onlineSum != offlineSum)
+    {
+        playSound("snd/error.mp3", false);
+        initProfile(idx);
+        return 1;
+    }
     fclose(infile);
     activeProfile = idx;
+    if (!profiles[activeProfile].options.music)
+        stopSound();
     playSound("snd/load.mp3", false);
+    profiles[activeProfile].profileHeader.qName[0x1F] = 0;
+    profiles[activeProfile].profileHeader.saveDate[0x1F] = 0;
+    profiles[activeProfile].profileHeader.saveTime[0x1F] = 0;
+    profiles[activeProfile].options.name[0x1F] = 0;
+    return 0;
 }
 void saveProfile(PlayerProfile profile, int idx)
 {
@@ -33,6 +75,8 @@ void saveProfile(PlayerProfile profile, int idx)
     snprintf(buf, 32, "save/profile%d.dat", idx + 1);
     FILE *outfile;
     outfile = fopen(buf, "wb");
+    unsigned int checksum = crc32((char *)&profile, sizeof(PlayerProfile));
+    fwrite(&checksum, 4, 1, outfile);
     fwrite(&profile, sizeof(PlayerProfile), 1, outfile);
     fclose(outfile);
     playSound("snd/save.mp3", false);
@@ -54,43 +98,104 @@ void saveActiveProfile()
     clearScreen();
 }
 
-void initProfiles()
+void initProfile(int idx)
 {
-    char zero16[16];
-    char zero20[20];
-    for (int i = 0; i < 16; i++)
+    profiles[idx] = (PlayerProfile){
+        (ProfileHeader){
+            "Free slot",
+            "Start a new game",
+            "And load here later"},
+        (Progression){
+            "menu",
+            "",
+            "",
+            -1,
+            0,
+            0,
+            0,
+            0,
+            "",
+            FIND_ME_IF_YOU_CAN},
+        (Options){
+            true,
+            true,
+            true,
+            true,
+            NORMAL,
+            R_RED,
+            "Unnamed"},
+        ""};
+}
+
+void profileMenu()
+{
+    int sel = 0;
+    ProfileHeader *headers = malloc(sizeof(ProfileHeader) * 4);
+    for (int i = 0; i < 4; i++)
     {
-        zero16[i] = 0;
+        headers[i] = quickLoadProfile(i);
     }
-    for (int i = 0; i < 20; i++)
+    char *buf = malloc(0x70 * 4);
+    while (1 < 2)
     {
-        zero20[i] = 0;
+        MenuItem menu[5];
+        for (int i = 0; i < 4; i++)
+        {
+            snprintf(buf + (0x70 * i), 0x70, "%d. %s\n   %s\n   %s\n", i + 1, headers[i].qName, headers[i].saveDate, headers[i].saveTime);
+            menu[i] = (MenuItem){BUTTON, buf + (0x70 * i), &dummy, -1, NULL, &loadProfile};
+        }
+        menu[4] = (MenuItem){BUTTON, "5. Exit\n   Please don't go :(\n   It would be sad", &dummy, -1, NULL, &loadProfile};
+        printMenu("Fishing C > Profiles", menu, 5, &sel, (Color[]){BLACK, WHITE});
+        if (sel == 4)
+        {
+            activeProfile = -1;
+            break;
+        }
+        activeProfile = sel;
+        if (loadProfile(activeProfile) != 0)
+        {
+            clearScreen();
+            printf("\nFishing C > Profiles > Corrupted data\n\nSave data is corrupted\n\nIt looks like the save file is not valid.\n");
+            printf("Because of that, game cannot use this file\nas an accurate source to get data.\n\n");
+            printf("To fix this, the save file must be deleted.\nThis will delete any progress you may have\nachieved.\n\n");
+            printf("Would you like to delete this data now? (Y/N) ");
+            char *rkey = readKey();
+            while (true)
+            {
+                if (strcmp(rkey, "121") == 0 || strcmp(rkey, "121") == 0)
+                {
+                    char buf[32];
+                    snprintf(buf, 32, "save/profile%d.dat", activeProfile + 1);
+                    remove(buf);
+                    headers[activeProfile] = quickLoadProfile(activeProfile);
+                    break;
+                }
+                else if (strcmp(rkey, "110") == 0 || strcmp(rkey, "78") == 0)
+                {
+                    break;
+                }
+                rkey = readKey();
+            }
+            continue;
+        }
+        break;
     }
-    for (int i = 0; i < 8; i++)
+    free(buf);
+    free(headers);
+}
+
+unsigned int crc32(const char *dataPtr, size_t dataSize)
+{
+    unsigned int crc = 0xffffffff;
+    for (size_t i = 0; i < dataSize; i++)
     {
-        profiles[i] = (PlayerProfile){
-            (ProfileHeader){
-                "Free slot",
-                "Start a new game",
-                "And load here later"},
-            (Progression){
-                "menu",
-                "",
-                "",
-                false,
-                0,
-                0,
-                0,
-                0,
-                "",
-                FIND_ME_IF_YOU_CAN},
-            (Options){
-                true,
-                true,
-                true,
-                true,
-                NORMAL,
-                RED,
-                "Unnamed"}};
+        char byte = dataPtr[i];
+        crc = crc ^ byte;
+        for (char j = 8; j > 0; --j)
+        {
+            crc = (crc >> 1) ^ (0xEDB88320 & (-(crc & 1)));
+        }
+        i++;
     }
+    return crc ^ 0xffffffff;
 }

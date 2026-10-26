@@ -58,14 +58,15 @@ void rootMenu();
  */
 int fishingMenu(char *title, int *defaults, void *fCast, void *fLore, void *fExit, Color *colors);
 
-void keycodeTester(int *sel);
-void soundTest(int *sel);
-void musicTest(int *sel);
+void keycodeTester();
+void soundTest();
+void musicTest();
 void actionTester(int *sel);
-void showGlobalVariables(int *sel);
+void showGlobalVariables();
 void testFishingMenu(int *sel);
-void testFishBattle(int *sel);
+void testFishBattle();
 void settingsMenu(int *sel);
 void dummyFunc();
 void toggleSetting(int *sel);
+void nameEntry();
 #endif

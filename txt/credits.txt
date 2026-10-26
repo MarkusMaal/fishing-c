@@ -1,0 +1,51 @@
+                   Codename MissingSalmon
+
+
+                       - Main code -
+
+                        Markus Maal
+
+
+                     - Created using -
+
+                    Visual Studio Code
+
+
+                         - Music -
+
+               Electro Sketch - Kevin MacLeod
+               Pure attitude - Kevin MacLeod
+                 River Fire - Kevin MacLeod
+                  Envision - Kevin MacLeod
+                One Sly Move - Kevin MacLeod
+               Death and Axes - Kevin MacLeod
+               Take a Chance - Kevin MacLeod
+              Always Hopeful - Silent Partner
+                  Frank Nora - MC Ballad T
+               Water Prelude - Kevin MacLeod
+
+        Kevin MacLeod's music from incompetech.com
+Licensed under Creative Commons: By Attribution 3.0 License
+         http://creativecommons.org/licenses/by/3.0/
+
+
+                     - Sound library -
+
+                C Audio Player by saad-out
+
+
+                      - Ported from -
+
+                     Fishing Batch 1.2
+
+
+                    - Special thanks -
+
+     To everyone that writes C tutorials to allow me to
+                    program this port!
+
+
+                      - That's it! -
+
+%s
+%s

@@ -133,8 +133,9 @@ void drawMap(int x, int y);
 
 /**
  * Main game loop that runs while the map is being played
+ * @param mapId ID for the currently played map (for storytelling purposes)
  */
-void mapLoop();
+void mapLoop(int mapId);
 
 /**
  * Safely unload the map from memory

@@ -146,7 +146,6 @@ void loadMap(char *fileName)
         }
         fseek(infile, next, SEEK_SET);
     }
-    profiles[activeProfile].progression.goalWeight = mapGoal.grams + (int)(((float)(rand() % 101) / 100.0f) * (float)mapGoal.variation * 2.0f - (float)mapGoal.variation);
 }
 
 void drawMap(int dx, int dy)
@@ -211,14 +210,31 @@ void drawMap(int dx, int dy)
     printf("\n");
 }
 
-void mapLoop()
+void mapLoop(int mapId)
 {
+    if (profiles[activeProfile].progression.playing == -1)
+    {
+        profiles[activeProfile].progression.playing = mapId;
+        profiles[activeProfile].progression.goalWeight = mapGoal.grams + (int)(((float)(rand() % 101) / 100.0f) * (float)mapGoal.variation * 2.0f - (float)mapGoal.variation);
+    }
+    else
+    {
+        memcpy(mapSpawn.entries, profiles[activeProfile].spawnTable, 0x190);
+    }
     while (true)
     {
+        memcpy(profiles[activeProfile].spawnTable, mapSpawn.entries, 0x190);
         if (profiles[activeProfile].options.autosave)
+        {
             saveProfile(profiles[activeProfile], activeProfile);
-        int tx = rand() % 21;
-        int ty = rand() % 21;
+        }
+        if (profiles[activeProfile].options.storytell && !profiles[activeProfile].progression.storiesTold[mapId] & 0x01)
+        {
+            loreDisplay();
+            profiles[activeProfile].progression.storiesTold[mapId] |= 0x01;
+        }
+        int tx = rand() % 20;
+        int ty = rand() % 20;
         if (profiles[activeProfile].progression.goalWeight <= profiles[activeProfile].progression.weight)
         {
             profiles[activeProfile].progression.mapName[0] = 'w';
@@ -333,10 +349,6 @@ void cast(int *values)
                 printf("SPOT %d\n", spotId);
                 printf("FISH (ID: %d)\n", mapSpawn.entries[spotId]);
                 // printf("[DEBUG] Rolled %d at %d\n", mapSpawn.entries[spotId], spotId);
-                if (mapSpawn.entries[spotId] >= mapSpawn.header.chunkCount || mapSpawn.entries[spotId] < 0)
-                {
-                    return;
-                }
                 char *fishName = mapFish.messages[(int)mapSpawn.entries[spotId]];
                 char buf[32];
                 snprintf(buf, 32, "fsh/%s.fsh", fishName);
@@ -391,12 +403,13 @@ void unloadMap()
     printf("╝\n\n Tip: %s\n", "You can play the game again without losing\n progress by creating a new profile.");
     stopSound();
     char *file = "menu\0";
-    for (int i = 0; i < strlen(file) + 1; i++)
+    for (int i = 0; i < (int)strlen(file) + 1; i++)
         profiles[activeProfile].progression.mapName[i] = file[i];
     profiles[activeProfile].progression.totalLuck = 0;
     profiles[activeProfile].progression.throws = 0;
     profiles[activeProfile].progression.goalWeight = 0;
     profiles[activeProfile].progression.weight = 0;
+    profiles[activeProfile].progression.playing = -1;
     /*free(mapTitle.name);
     free(&mapLayout);
     free(&mapFish);

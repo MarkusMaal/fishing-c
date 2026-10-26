@@ -41,7 +41,7 @@ void actionTester(int *sel)
     }
 }
 
-void keycodeTester(int *sel)
+void keycodeTester()
 {
     clearScreen();
     printf("\nKeycode reader (press RETURN to exit)\n\nPress any key...");
@@ -60,7 +60,7 @@ void testFishingMenu(int *sel)
     fishingMenu("Fishing C > Main menu > Developer > Action test > Fishing menu", (int[]){*sel, dummy}, testItemEntry, dummyFunc, dummyFunc, (Color[]){BLACK, WHITE});
 }
 
-void testFishBattle(int *sel)
+void testFishBattle()
 {
     char buff[128];
     clearScreen();
@@ -78,7 +78,7 @@ void testFishBattle(int *sel)
     readKey();
 }
 
-void showGlobalVariables(int *sel)
+void showGlobalVariables()
 {
     clearScreen();
     printf("\nFishing C > Main menu > Developer > Variables\n\nGlobal variable listing:\n\n");
@@ -100,7 +100,7 @@ void showGlobalVariables(int *sel)
     printf("\n");
 }
 
-void soundTest(int *sel)
+void soundTest()
 {
     int max = 11;
     char *songs[max];
@@ -142,7 +142,7 @@ void soundTest(int *sel)
     }
 }
 
-void musicTest(int *sel)
+void musicTest()
 {
     int max = 3;
     char *songs[max];
@@ -252,10 +252,33 @@ void rootMenu()
     int sel = 0;
     while (!ex)
     {
+        if (strcmp(profiles[activeProfile].options.name, "Unnamed") == 0)
+            nameEntry();
+        if (profiles[activeProfile].progression.playing != -1 && strcmp(profiles[activeProfile].progression.mapName, "menu") != 0)
+        {
+            char playingMap[8];
+            strcpy(playingMap, profiles[activeProfile].progression.mapName);
+            clearScreen();
+            printf("\nFishing C > Profiles > Resume game\n\nWould you like to resume your game\n\nIt looks like you've left the game\nwhile still fishing on a %s, %s!\n\nWould you like to continue where you left off?\n\n[Y/N] ", profiles[activeProfile].progression.mapName + 1, profiles[activeProfile].options.name);
+            char *rkey = readKey();
+            while (true)
+            {
+                if (strcmp(rkey, "121") == 0 || strcmp(rkey, "121") == 0)
+                {
+                    playMap(&profiles[activeProfile].progression.playing);
+                    break;
+                }
+                else if (strcmp(rkey, "110") == 0 || strcmp(rkey, "78") == 0)
+                {
+                    break;
+                }
+                rkey = readKey();
+            }
+        }
         MenuItem *menu = (MenuItem[]){
             (MenuItem){BUTTON, "Start", &dummy, -1, NULL, &startMenu},
             (MenuItem){BUTTON, "Save game", &dummy, -1, NULL, &saveActiveProfile},
-            (MenuItem){DISABLED_BUTTON, "Change profile", &dummy, -1, NULL, &testItemEntry},
+            (MenuItem){BUTTON, "Change profile", &dummy, -1, NULL, &profileMenu},
             (MenuItem){BUTTON, "Settings", &dummy, -1, NULL, &settingsMenu},
             (MenuItem){DISABLED_BUTTON, "Livewell", &dummy, -1, NULL, &testItemEntry},
             (MenuItem){BUTTON, "Exit", &dummy, -1, NULL, &ret},
@@ -273,6 +296,8 @@ void rootMenu()
         {
             menuPtr(&sel);
         }
+        if (activeProfile == -1)
+            ret(&sel);
         if (last == -1)
             sel = 0;
     }
@@ -296,6 +321,46 @@ char *genTip(char *mapTip)
     default:
         return mapTip;
     }
+}
+
+void nameEntry()
+{
+    clearScreen();
+    if (strcmp(profiles[activeProfile].options.name, "Unnamed") == 0)
+    {
+        printf("\nFishing C > Name entry\n\n");
+    }
+    else
+    {
+        printf("\nFishing C > Main menu > Settings > Change name\n\nCurrent name: %s\n\n", profiles[activeProfile].options.name);
+    }
+    printf("Please enter your name...\n\n");
+    int nI = 0;
+    char c;
+    char *lastName = malloc(0x20);
+    strcpy(lastName, profiles[activeProfile].options.name);
+    do
+    {
+        scanf("%c", &c);
+        if (c == 8 && nI > 0)
+        {
+            profiles[activeProfile].options.name[nI] = '\0';
+            profiles[activeProfile].options.name[nI - 1] = '\0';
+            nI--;
+        }
+        if (nI < 0x1F && c != 8)
+        {
+            profiles[activeProfile].options.name[nI] = c != '\n' ? c : '\0';
+            nI++;
+        }
+    } while (c != '\n');
+    // use last name if left empty (or the default "Unnamed")
+    if (strlen(profiles[activeProfile].options.name) == 0)
+    {
+        strcpy(profiles[activeProfile].options.name, lastName);
+    }
+    free(lastName);
+    playSound("snd/submenu.mp3", false);
 }
 
 void playMap(int *sel)
@@ -338,7 +403,7 @@ void playMap(int *sel)
     snprintf(buf, 32, "snd/%s", mapMusic.filename);
     playSound(buf, 1);
     printf("Loaded map: %s\n", mapTitle.name);
-    mapLoop();
+    mapLoop(*sel);
     if (strcmp(profiles[activeProfile].progression.mapName, "win") == 0)
     {
         stopSound();
@@ -415,7 +480,7 @@ void settingsMenu(int *sel)
             (MenuItem){CHECKBOX, "Enable story/instructions", &profiles[activeProfile].options.storytell, 2, NULL, &toggleSetting},
             (MenuItem){CHOICE, "Difficulty", (int *)&profiles[activeProfile].options.difficulty, 3, (char *[]){"Easy", "Normal", "Hard"}, &ret},
             (MenuItem){CHOICE, "Rod color", (int *)&profiles[activeProfile].options.rodColor, 14, (char *[]){"Blue", "Green", "Aqua", "Red", "Purple", "Gold", "White", "Gray", "Light blue", "Lime", "Cyan", "Bright red", "Magenta", "Yellow"}, &ret},
-            (MenuItem){BUTTON, "Change name", &dummy, -1, NULL, &ret},
+            (MenuItem){BUTTON, "Change name", &dummy, -1, NULL, &nameEntry},
             (MenuItem){BUTTON, "Delete profile", &dummy, -1, NULL, &ret},
             (MenuItem){BUTTON, "Go back to main menu", &dummy, -1, NULL, &ret},
         };

@@ -136,6 +136,7 @@ int *fightFish(FishData fish, int luck)
         }
         if (life <= 0)
         {
+            playSound("snd/negative.mp3", false);
             fishY = 0;
             while (fish.attackDir == LEFT ? fishX > -64 : 2 < 1)
             {
@@ -165,8 +166,10 @@ int *fightFish(FishData fish, int luck)
             // free(lastKey);
             clearScreen();
             printf("\n\n    Oh no\n    you lost the fish!\n\n\n");
-            printf("Press any key to continue . . . ");
-            readKey();
+            printf("Press RETURN to continue . . . ");
+            while (strcmp(readKey(), "return") != 0)
+            {
+            }
             return (int[]){0, 0};
         }
         if ((char)fish.attackPatternSteps[i] > -1)

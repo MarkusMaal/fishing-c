@@ -76,14 +76,18 @@ typedef struct
     ProfileHeader profileHeader;
     Progression progression;
     Options options;
+    unsigned char spawnTable[0x190];
 } PlayerProfile;
 
 extern PlayerProfile profiles[8];
 extern int activeProfile;
 
-void loadProfile(int idx);
+ProfileHeader quickLoadProfile(int idx);
+int loadProfile(int idx);
 void saveProfile(PlayerProfile profile, int idx);
-void initProfiles();
+void initProfile(int idx);
 void saveActiveProfile();
+void profileMenu();
+unsigned int crc32(const char *dataPtr, size_t dataSize);
 
 #endif
