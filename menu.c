@@ -144,11 +144,20 @@ void soundTest()
 
 void musicTest()
 {
-    int max = 3;
+    int max = 12;
     char *songs[max];
-    songs[0] = "snd/menu_bg.mp3";
-    songs[1] = "snd/lake_bg.mp3";
-    songs[2] = "snd/win_stage.mp3";
+    songs[0] = "snd/falls_bg.mp3";
+    songs[1] = "snd/jelly_bg.mp3";
+    songs[2] = "snd/lake_bg.mp3";
+    songs[3] = "snd/livewell.mp3";
+    songs[4] = "snd/menu_bg.mp3";
+    songs[5] = "snd/river_bg.mp3";
+    songs[6] = "snd/salmon_bg.mp3";
+    songs[7] = "snd/sea_bg.mp3";
+    songs[8] = "snd/sea_boss.mp3";
+    songs[9] = "snd/swamp_bg.mp3";
+    songs[10] = "snd/weird_bg.mp3";
+    songs[11] = "snd/win_stage.mp3";
     int msel = 0;
     while (true)
     {
