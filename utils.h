@@ -27,7 +27,7 @@ typedef struct
     short lastMarker;
 } Record;
 
-typedef enum
+typedef enum : short
 {
     BLACK,
     RED,

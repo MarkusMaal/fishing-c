@@ -11,6 +11,24 @@ typedef enum
     SUPER_HARD
 } Difficulty;
 
+typedef enum
+{
+    R_BLUE,
+    R_GREEN,
+    R_AQUA,
+    R_RED,
+    R_PURPLE,
+    R_GOLD,
+    R_WHITE,
+    R_GRAY,
+    R_LBLUE,
+    R_LIME,
+    R_CYAN,
+    R_LRED,
+    R_MAGENTA,
+    R_YELLOW,
+} RColor;
+
 typedef struct
 {
     int music;     // play music
@@ -19,7 +37,7 @@ typedef struct
     int storytell; // display lore when playing a stage for the first time
 
     Difficulty difficulty;
-    Color rodColor;
+    RColor rodColor;
 
     // 32 bytes
     char name[0x20];

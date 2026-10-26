@@ -414,7 +414,7 @@ void settingsMenu(int *sel)
             (MenuItem){CHECKBOX, "Use autosave", &profiles[activeProfile].options.autosave, 2, NULL, &toggleSetting},
             (MenuItem){CHECKBOX, "Enable story/instructions", &profiles[activeProfile].options.storytell, 2, NULL, &toggleSetting},
             (MenuItem){CHOICE, "Difficulty", (int *)&profiles[activeProfile].options.difficulty, 3, (char *[]){"Easy", "Normal", "Hard"}, &ret},
-            (MenuItem){CHOICE, "Rod color", (int *)&profiles[activeProfile].options.rodColor, 15, (char *[]){"Black", "Red", "Green", "Dark yellow", "Dark blue", "Magenta", "Aqua", "Light gray", "Gray", "Bright red", "Lime", "Yellow", "Blue", "Light magenta", "Cyan", "White"}, &ret},
+            (MenuItem){CHOICE, "Rod color", (int *)&profiles[activeProfile].options.rodColor, 14, (char *[]){"Blue", "Green", "Aqua", "Red", "Purple", "Gold", "White", "Gray", "Light blue", "Lime", "Cyan", "Bright red", "Magenta", "Yellow"}, &ret},
             (MenuItem){BUTTON, "Change name", &dummy, -1, NULL, &ret},
             (MenuItem){BUTTON, "Delete profile", &dummy, -1, NULL, &ret},
             (MenuItem){BUTTON, "Go back to main menu", &dummy, -1, NULL, &ret},
