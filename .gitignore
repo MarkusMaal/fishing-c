@@ -1,0 +1,6 @@
+save/*.dat
+audio-player
+.vscode
+fishingc
+fishingc.exe
+libsimpleaudio.a

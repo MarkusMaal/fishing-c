@@ -1,0 +1,220 @@
+#include "fish.h"
+FishData loadFish(char *fileName)
+{
+
+    FILE *infile;
+    infile = fopen(fileName, "rb");
+    Record rStruct;
+    FishData fish;
+    int c;
+    while ((c = fgetc(infile)) != EOF)
+    {
+        fseek(infile, -1, SEEK_CUR);
+        fread(&rStruct, sizeof(Record), 1, infile);
+        int next = ftell(infile) + rStruct.total * 0x10;
+        if (strcmp(rStruct.label, "FSHDATA") == 0)
+        {
+            if (fread(&fish, rStruct.chunkSize, rStruct.chunkCount, infile) != 1)
+            {
+                printf("Error reading fish data\n");
+                readKey();
+            }
+        }
+        fseek(infile, next, SEEK_SET);
+    }
+    return fish;
+}
+
+int *fightFish(FishData fish, int luck)
+{
+    int fishX = fish.spawnX;
+    int fishY = fish.spawnY;
+    int weight = (float)luck / 100.0f * (fish.weightMax - fish.weightMin) + fish.weightMin;
+    int length = (float)luck / 100.0f * (fish.lengthMax - fish.lengthMin) + fish.lengthMin;
+    int life = fish.tolerance;
+    char *lastKey = malloc(0x10);
+    char lastKeyId = 0;
+    char pad[fishX + 1];
+    for (int i = 0; i < fish.fightLength; i++)
+    {
+        // return to cycle start in case of bad luck (mainly for boss fish)
+        if (fish.cycleLuck != 0 && i == fish.cycleStart + fish.cycleLength)
+        {
+            int roll = rand() % 101;
+            roll += (int)((float)luck / 100.0f * 10.0f);
+            if (roll < fish.cycleLuck)
+            {
+                printf("CYCLE!");
+                i = fish.cycleStart;
+                continue;
+            }
+        }
+
+        // start padding based on fish position
+
+        // draw fish at current position
+        clearScreen();
+        for (int y = 0; y < fishY; y++)
+        {
+            printf("\n");
+        }
+        int gI = fish.attackPatternGeometry[i];
+        for (int cI = 0; cI < fishX; cI++)
+            pad[cI] = ' ';
+        pad[fishX] = '\0';
+        int fishTempY = fishY;
+        for (int r = 0; r < 16; r++)
+        {
+            if (fishTempY < 0)
+            {
+                fishTempY++;
+                continue;
+            }
+            printf("%s%s", pad, fish.geometry[gI][r]);
+        }
+        char requestedInput = fish.attackPatternInputs[i];
+        if (fish.attackPatternInputs[i] == 8)
+        {
+            requestedInput = rand() % 8;
+        }
+        if (fish.attackPatternInputs[i] == 9)
+        {
+            requestedInput = lastKeyId;
+        }
+        char *inputLabels[0x20] = {
+            "Press C to catch",
+            "Press F to catch",
+            "Press T to catch",
+            "Press W to catch",
+            "Press A to catch",
+            "Press S to catch",
+            "Press D to catch",
+            "Press N to catch",
+            "Press ? to catch",
+            "Press ? again to catch",
+            "Hold any key to catch",
+        };
+        printf("\n\n%s:", inputLabels[(int)requestedInput]);
+        char *rKey = readKey();
+        switch (requestedInput)
+        {
+        case ANY:
+        case RANDOM:
+            break;
+        case LAST:
+            if (strcmp(lastKey, rKey) != 0)
+                life--;
+            break;
+        case C:
+            if (strcmp("99", rKey) != 0)
+                life--;
+            break;
+        case F:
+            if (strcmp("102", rKey) != 0)
+                life--;
+            break;
+        case T:
+            if (strcmp("116", rKey) != 0)
+                life--;
+            break;
+        case W:
+            if (strcmp("119", rKey) != 0)
+                life--;
+            break;
+        case A:
+            if (strcmp("97", rKey) != 0)
+                life--;
+            break;
+        case S:
+            if (strcmp("115", rKey) != 0)
+                life--;
+            break;
+        case D:
+            if (strcmp("100", rKey) != 0)
+                life--;
+            break;
+        }
+        if (life <= 0)
+        {
+            fishY = 0;
+            while (fish.attackDir == LEFT ? fishX > -64 : 2 < 1)
+            {
+                clearScreen();
+                fishX -= 2;
+                for (int cI = 0; cI < fishX; cI++)
+                    pad[cI] = ' ';
+                pad[fishX] = '\0';
+                int lenSum = 0;
+                for (int r = 0; r < 16; r++)
+                {
+                    if (fishX >= 0)
+                    {
+                        printf("%s%s", pad, fish.geometry[gI][r]);
+                        lenSum = 1;
+                    }
+                    else
+                    {
+                        lenSum += strlen(fish.geometry[gI][0] + (-fishX));
+                        printf("%s%s", pad, fish.geometry[gI][r] + (-fishX));
+                    }
+                }
+                if (lenSum == 0)
+                    break;
+                usleep(66667);
+            }
+            // free(lastKey);
+            clearScreen();
+            printf("\n\n    Oh no\n    you lost the fish!\n\n\n");
+            printf("Press any key to continue . . . ");
+            readKey();
+            return (int[]){0, 0};
+        }
+        if ((char)fish.attackPatternSteps[i] > -1)
+        {
+            fishX += (fish.attackDir == LEFT ? -1 : 1) * fish.attackPatternSteps[i];
+        }
+        else
+        {
+            fishY += (char)fish.attackPatternSteps[i];
+        }
+        lastKeyId = requestedInput;
+        lastKey = rKey;
+    }
+    char end = false;
+    for (int cI = 0; cI < fishX; cI++)
+    {
+        pad[cI] = ' ';
+    }
+    while (!end)
+    {
+        // clearScreen();
+        end = true;
+        int tmpFishY = fishY;
+        for (int r = 0; r < 16; r++)
+        {
+            if (tmpFishY < 0)
+            {
+                tmpFishY++;
+                continue;
+            }
+            printf("%s%s", pad, fish.geometry[0][r]);
+            end = false;
+        }
+        fishY--;
+    }
+    clearScreen();
+    playSound("snd/positive.mp3", false);
+    printf("\n\n   You got a\n    fish!!!\n\n\n\n");
+    usleep(1200000);
+    clearScreen();
+    for (int i = 0; i < 0x10; i++)
+    {
+        printf((char *)fish.geometry[3][i], weight, length);
+    }
+    printf("\nPress RETURN continue . . . ");
+    while (strcmp(readKey(), "return") != 0)
+    {
+    }
+    clearScreen();
+    return (int[]){weight, length};
+}

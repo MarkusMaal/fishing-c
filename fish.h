@@ -1,0 +1,60 @@
+#ifndef FISH_H
+#define FISH_H
+#include "utils.h"
+
+typedef enum
+{
+    LEFT,
+    RIGHT
+} MoveDirection;
+
+typedef enum : char
+{
+    C,
+    F,
+    T,
+    W,
+    A,
+    S,
+    D,
+    N,
+    RANDOM,
+    LAST,
+    ANY
+} Input;
+
+typedef enum : char
+{
+    FORW1,
+    FORW2,
+    FORW3,
+    UP1,
+    UP2,
+    UP3,
+} MovementPattern;
+
+typedef struct
+{
+    char geometry[4][0x10][0x40];
+    char attackPatternGeometry[0x40];
+    Input attackPatternInputs[0x40];
+    char attackPatternSteps[0x40];
+    MoveDirection attackDir;
+    int fightLength;
+    int cycleStart;
+    int cycleLuck;
+    int cycleLength;
+    int spawnX;
+    int spawnY;
+    int weightMin;
+    int weightMax;
+    int lengthMin;
+    int lengthMax;
+    short largeUnits;
+    short tolerance;
+} FishData;
+
+FishData loadFish(char *fileName);
+int *fightFish(FishData fish, int luck);
+
+#endif

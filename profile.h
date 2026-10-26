@@ -1,0 +1,71 @@
+#ifndef PROFILE_H
+#define PROFILE_H
+#include "utils.h"
+#include <time.h>
+
+typedef enum
+{
+    EASY,
+    NORMAL,
+    HARD,
+    SUPER_HARD
+} Difficulty;
+
+typedef struct
+{
+    int music;     // play music
+    int sfx;       // play sound effects
+    int autosave;  // enable automatic saving of profile during gameplay
+    int storytell; // display lore when playing a stage for the first time
+
+    Difficulty difficulty;
+    Color rodColor;
+
+    // 32 bytes
+    char name[0x20];
+} Options;
+
+typedef enum
+{
+    FIND_ME_IF_YOU_CAN,
+    READY,
+    TRUE
+} Salmon;
+
+typedef struct
+{
+    char mapName[0x8];
+    char mapUnlocks[0x10];
+    char storiesTold[0x10]; // love this name lol
+    int playing;
+    int weight;
+    int goalWeight;
+    int totalLuck;
+    int throws;
+    char targets[20];
+    Salmon solmn;
+} Progression;
+
+typedef struct
+{
+    char qName[0x20]; // only use for profile select menu
+    char saveDate[0x20];
+    char saveTime[0x20];
+} ProfileHeader;
+
+typedef struct
+{
+    ProfileHeader profileHeader;
+    Progression progression;
+    Options options;
+} PlayerProfile;
+
+extern PlayerProfile profiles[8];
+extern int activeProfile;
+
+void loadProfile(int idx);
+void saveProfile(PlayerProfile profile, int idx);
+void initProfiles();
+void saveActiveProfile();
+
+#endif
