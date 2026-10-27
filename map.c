@@ -150,6 +150,27 @@ void loadMap(char *fileName)
         }
         fseek(infile, next, SEEK_SET);
     }
+    if (genSpawn) // map doesn't have a spawn table, so let's generate one during runtime!
+    {
+        mapSpawn.header.chunkCount = 1;
+        mapSpawn.header.chunkSize = 400;
+        mapSpawn.header.lastMarker = 0;
+        mapSpawn.header.total = 25;
+        strcpy(mapSpawn.header.label, "SPAWN");
+        for (int i = 0; i < 400; i++)
+        {
+            int r = rand() % (mapFish.header.chunkCount + 1);
+            if (r == mapFish.header.chunkCount)
+            {
+                r = rand() % 100;
+                mapSpawn.entries[i] = r < 50 ? 255 : 0; // 255 = no fish, 0 = boot (in most cases)
+            }
+            else
+            {
+                mapSpawn.entries[i] = r; // Note: due to the way this generator works all fish have equal probability of spawning
+            }
+        }
+    }
 }
 
 void drawMap(int dx, int dy)
