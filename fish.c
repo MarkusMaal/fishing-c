@@ -57,8 +57,10 @@ int *fightFish(FishData fish, int luck)
     int weight = (float)luck / 100.0f * (fish.weightMax - fish.weightMin) + fish.weightMin;
     int length = (float)luck / 100.0f * (fish.lengthMax - fish.lengthMin) + fish.lengthMin;
     int life = fish.tolerance;
+    char *llastKey = malloc(0x10);
     char *lastKey = malloc(0x10);
     char lastKeyId = 0;
+    char llastKeyId = 0;
     char pad[fishX + 1];
     for (int i = 0; i < fish.fightLength; i++)
     {
@@ -67,9 +69,9 @@ int *fightFish(FishData fish, int luck)
         {
             int roll = rand() % 101;
             roll += (int)((float)luck / 100.0f * 10.0f);
-            if (roll < fish.cycleLuck)
+            if (roll > fish.cycleLuck)
             {
-                printf("CYCLE!");
+                // printf("CYCLE!");
                 i = fish.cycleStart;
                 continue;
             }
@@ -110,6 +112,14 @@ int *fightFish(FishData fish, int luck)
         {
             requestedInput = lastKeyId;
         }
+        if (fish.attackPatternInputs[i] == 9)
+        {
+            requestedInput = lastKeyId;
+        }
+        if (fish.attackPatternInputs[i] == 12)
+        {
+            requestedInput = llastKeyId;
+        }
         char *inputLabels[0x20] = {
             "Press C to catch",
             "Press F to catch",
@@ -119,11 +129,12 @@ int *fightFish(FishData fish, int luck)
             "Press S to catch",
             "Press D to catch",
             "Press N to catch",
-            "Press ? to catch",
-            "Press ? again to catch",
+            "",
+            "",
             "Hold any key to catch",
-        };
-        printf("\n\n%s:", inputLabels[(int)requestedInput]);
+            ""};
+        if (strcmp(inputLabels[(int)requestedInput], "") != 0)
+            printf("\n\n%s:", inputLabels[(int)requestedInput]);
         if (requestedInput == NONE) // mainly for the "catching fish" animation
         {
             usleep(66667);
@@ -136,6 +147,10 @@ int *fightFish(FishData fish, int luck)
         case RANDOM:
             break;
         case LAST:
+            if (strcmp(llastKey, rKey) != 0)
+                life--;
+            break;
+        case BEFORELAST:
             if (strcmp(lastKey, rKey) != 0)
                 life--;
             break;
@@ -215,7 +230,9 @@ int *fightFish(FishData fish, int luck)
         {
             fishY += (char)fish.attackPatternSteps[i];
         }
+        llastKeyId = lastKeyId;
         lastKeyId = requestedInput;
+        llastKey = lastKey;
         lastKey = rKey;
     }
     clearScreen();

@@ -2,6 +2,7 @@
 
 int ex = 0;
 int last = 0;
+int enableDevMenu = 1;
 
 void ret(int *sel)
 {
@@ -41,7 +42,7 @@ void actionTester(int *sel)
         MenuItem *menu = (MenuItem[]){
             (MenuItem){BUTTON, "Fishing menu", &dummy, -1, NULL, &testFishingMenu},
             (MenuItem){BUTTON, "Battle test", &dummy, -1, NULL, &testFishBattle},
-            (MenuItem){BUTTON, "100%% unlock", &dummy, -1, NULL, &devUnlock},
+            (MenuItem){BUTTON, "100% unlock", &dummy, -1, NULL, &devUnlock},
             (MenuItem){BUTTON, "Return to previous menu", &dummy, -1, NULL, &ret},
         };
         void (*menuPtr)(int *);
@@ -241,6 +242,13 @@ void menuTest(int *sel)
     }
 }
 
+void deDev(int *sel)
+{
+    enableDevMenu = !enableDevMenu;
+    ret(sel);
+    *sel = 0;
+}
+
 void devMenu(int *sel)
 {
     ex--;
@@ -257,7 +265,7 @@ void devMenu(int *sel)
             (MenuItem){BUTTON, "Action test", &dummy, -1, NULL, &actionTester},
             (MenuItem){BUTTON, "Character test", &dummy, -1, NULL, &testItemEntry},
             (MenuItem){BUTTON, "Menu test", &dummy, -1, NULL, &menuTest},
-            (MenuItem){BUTTON, "Disable developer menu", &dummy, -1, NULL, &menuTest},
+            (MenuItem){BUTTON, "Disable developer menu", &dummy, -1, NULL, &deDev},
             (MenuItem){BUTTON, "Return to main menu", &dummy, -1, NULL, &ret},
         };
         void (*menuPtr)(int *);
@@ -312,7 +320,7 @@ void rootMenu()
         };
         void (*menuPtr)(int *);
         void (*nargPtr)();
-        menuPtr = printMenu("Fishing C > Main menu", menu, 7, &sel, (Color[]){BLACK, WHITE});
+        menuPtr = printMenu("Fishing C > Main menu", menu, enableDevMenu ? 7 : 6, &sel, (Color[]){BLACK, WHITE});
         if (sel == 1)
         {
             nargPtr = (void (*)(void))menuPtr;
@@ -426,7 +434,7 @@ void playMap(int *sel)
         cprintf("   ", (Color[]){mapColor.bg, mapColor.fg, mapColor.bg, mapColor.fg});
         clearScreen();
     }
-    snprintf(buf, 32, "snd/%s", mapMusic.filename);
+    snprintf(buf, 32, "snd/%s", *mapMusic.filename);
     playSound(buf, 1);
     printf("Loaded map: %s\n", mapTitle.name);
     mapLoop(*sel);
@@ -444,8 +452,30 @@ void playMap(int *sel)
         printf("Press any key to continue . . . ");
         readKey();
     }
+    int selMap = profiles[activeProfile].progression.playing;
     unloadMap();
+    int secretMapCount = 0;
+    for (int i = 0; i < mapsCount; i++)
+    {
+        secretMapCount += mapsList[i].secret ? 1 : 0;
+    }
     playSound("snd/menu_bg.mp3", 1);
+    if (mapsCount - 1 - secretMapCount == selMap)
+    {
+        if (!(profiles[activeProfile].progression.storiesTold[0] & 0x02) && profiles[activeProfile].options.storytell)
+        {
+            clearScreen();
+            printf("\n\nYou have finished the game!\n\nBoss bass is now finally found and it is\nbeing examined for future projects.\n\n");
+            printf("Press any key to continue . . . ");
+            readKey();
+            profiles[activeProfile].progression.storiesTold[0] |= 0x02;
+        }
+        if (profiles[activeProfile].options.difficulty == SUPER_HARD)
+            profiles[activeProfile].progression.solmn = READY;     // enable secret map
+        profiles[activeProfile].progression.mapUnlocks[0] |= 0x04; // unlock super hard difficulty/end credits
+    }
+    if (profiles[activeProfile].options.autosave)
+        saveProfile(profiles[activeProfile], activeProfile);
     clearScreen();
 }
 
@@ -504,14 +534,21 @@ void settingsMenu(int *sel)
             (MenuItem){CHECKBOX, "Enable SFX", &profiles[activeProfile].options.sfx, 2, NULL, &toggleSetting},
             (MenuItem){CHECKBOX, "Use autosave", &profiles[activeProfile].options.autosave, 2, NULL, &toggleSetting},
             (MenuItem){CHECKBOX, "Enable story/instructions", &profiles[activeProfile].options.storytell, 2, NULL, &toggleSetting},
-            (MenuItem){CHOICE, "Difficulty", (int *)&profiles[activeProfile].options.difficulty, 3, (char *[]){"Easy", "Normal", "Hard"}, &ret},
+            (MenuItem){CHOICE, "Difficulty", (int *)&profiles[activeProfile].options.difficulty, profiles[activeProfile].progression.mapUnlocks[0] & 0x04 ? 4 : 3, profiles[activeProfile].progression.mapUnlocks[0] & 0x04 ? (char *[]){"Easy", "Normal", "Hard", "Super Hard"} : (char *[]){"Easy", "Normal", "Hard"}, &ret},
             (MenuItem){CHOICE, "Rod color", (int *)&profiles[activeProfile].options.rodColor, 14, (char *[]){"Blue", "Green", "Aqua", "Red", "Purple", "Gold", "White", "Gray", "Light blue", "Lime", "Cyan", "Bright red", "Magenta", "Yellow"}, &ret},
             (MenuItem){BUTTON, "Change name", &dummy, -1, NULL, &nameEntry},
             (MenuItem){BUTTON, "Delete profile", &dummy, -1, NULL, &ret},
             (MenuItem){BUTTON, "Go back to main menu", &dummy, -1, NULL, &ret},
         };
+        int rodUnlock = profiles[activeProfile].progression.mapUnlocks[0] & 0x02;
+        if (!rodUnlock)
+        {
+            menu[5] = menu[6];
+            menu[6] = menu[7];
+            menu[7] = menu[8];
+        }
         void (*menuPtr)(int *);
-        menuPtr = printMenu("Fishing C > Main menu > Settings", menu, 9, sel, (Color[]){BLACK, WHITE});
+        menuPtr = printMenu("Fishing C > Main menu > Settings", menu, rodUnlock ? 9 : 8, sel, (Color[]){BLACK, WHITE});
         menuPtr(sel);
     }
 }

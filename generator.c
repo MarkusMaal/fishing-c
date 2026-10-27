@@ -13,16 +13,16 @@ int main()
     for (int i = 0; i < 400; i++)
     {
         r = rand() % 10;
-        if (r < 4)
+        if (r < 3)
             gen[i] = 3;
-        else if (r >= 4 && r < 6)
+        else if (r >= 3 && r < 5)
             gen[i] = 1;
-        else if (r >= 6 && r < 8)
-            gen[i] = 2;
-        else if (r >= 8 && r < 9)
+        else if (r == 5)
             gen[i] = 4;
+        else if (r == 6 || r == 7)
+            gen[i] = 5;
         else
-            gen[i] = rand() % 100 < 50 ? 255 : 0;
+            gen[i] = rand() % 100 < 50 ? (r == 8 ? (rand() % 50 > 24 ? 2 : 6) : 255) : (r == 8 ? 6 : 0);
         if (gen[i] == 0 || gen[i] == 255)
         {
             luck[i] = 0;

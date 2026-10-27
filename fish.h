@@ -21,7 +21,8 @@ typedef enum : char
     RANDOM,
     LAST,
     ANY,
-    NONE
+    NONE,
+    BEFORELAST
 } Input;
 
 typedef enum : char

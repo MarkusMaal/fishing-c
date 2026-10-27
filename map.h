@@ -71,7 +71,7 @@ typedef struct
 typedef struct
 {
     Record header;
-    char filename[0x10];
+    char filename[99][0x10];
 } Music;
 
 typedef struct

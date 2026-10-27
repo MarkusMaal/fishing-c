@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "map.h"
 #include "profile.h"
+extern int enableDevMenu;
 
 /**
  * Return to previous menu
@@ -70,4 +71,5 @@ void dummyFunc();
 void toggleSetting(int *sel);
 void nameEntry();
 void devUnlock();
+void deDev(int *sel);
 #endif
