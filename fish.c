@@ -54,6 +54,7 @@ int *fightFish(FishData fish, int luck)
 
         // draw fish at current position
         clearScreen();
+        locate(0, 0);
         for (int y = 0; y < fishY; y++)
         {
             printf("\n");
@@ -70,7 +71,10 @@ int *fightFish(FishData fish, int luck)
                 fishTempY++;
                 continue;
             }
-            printf("%s%s", pad, fish.geometry[gI][r]);
+            if (fish.geometry[gI][r][0] != '\0')
+            {
+                printf("%s%s", strlen(pad) != 0 ? pad : "", fish.geometry[gI][r]);
+            }
         }
         char requestedInput = fish.attackPatternInputs[i];
         if (fish.attackPatternInputs[i] == 8)
@@ -95,6 +99,11 @@ int *fightFish(FishData fish, int luck)
             "Hold any key to catch",
         };
         printf("\n\n%s:", inputLabels[(int)requestedInput]);
+        if (requestedInput == NONE) // mainly for the "catching fish" animation
+        {
+            usleep(66667);
+            goto skipread;
+        }
         char *rKey = readKey();
         switch (requestedInput)
         {
@@ -134,6 +143,7 @@ int *fightFish(FishData fish, int luck)
                 life--;
             break;
         }
+    skipread:
         if (life <= 0)
         {
             playSound("snd/negative.mp3", false);
@@ -183,31 +193,10 @@ int *fightFish(FishData fish, int luck)
         lastKeyId = requestedInput;
         lastKey = rKey;
     }
-    char end = false;
-    for (int cI = 0; cI < fishX; cI++)
-    {
-        pad[cI] = ' ';
-    }
-    while (!end)
-    {
-        // clearScreen();
-        end = true;
-        int tmpFishY = fishY;
-        for (int r = 0; r < 16; r++)
-        {
-            if (tmpFishY < 0)
-            {
-                tmpFishY++;
-                continue;
-            }
-            printf("%s%s", pad, fish.geometry[0][r]);
-            end = false;
-        }
-        fishY--;
-    }
     clearScreen();
     playSound("snd/positive.mp3", false);
-    printf("\n\n   You got a\n    fish!!!\n\n\n\n");
+    locate(0, 0);
+    printf("         \n\n   You got a\n    fish!!!\n\n\n\n");
     usleep(1200000);
     clearScreen();
     for (int i = 0; i < 0x10; i++)

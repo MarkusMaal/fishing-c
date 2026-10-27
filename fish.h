@@ -20,7 +20,8 @@ typedef enum : char
     N,
     RANDOM,
     LAST,
-    ANY
+    ANY,
+    NONE
 } Input;
 
 typedef enum : char
