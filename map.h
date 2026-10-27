@@ -32,16 +32,39 @@ typedef struct
 
 typedef enum
 {
+    /*
+     * Catch any fish as long as it totals up to the weight specified
+     */
     WEIGHT,
+    /*
+     * Catch a specific boss fish, but it only has the chance to spawn when total luck is above a certain value
+     */
     BOSS,
+    /*
+     * Catch all the fish specified at least once, no weight or luck requirements
+     */
     TARGET
 } GoalType;
 
 typedef struct
 {
     GoalType type;
-    unsigned int grams;
+    /**
+     * When type is WEIGHT, this is the total amount of grams you need to complete the stage.
+     * Whem type is BOSS, this is the total amount of luck you need to get the boss fish to spawn.
+     * When type is TARGET, this value should always be -1.
+     */
+    int grams;
+    /**
+     * When type is WEIGHT or BOSS, this is the amount of deviation that the grams value may have. E.g. if the target is 500000 and variation is 20000, the actual target may become 490000.
+     * When type is TARGET, this is the number of fish you need to catch (i.e. length of targets array)
+     */
     unsigned int variation;
+    /**
+     * Unused when type is WEIGHT.
+     * When type is TARGET, this is the list of targets corresponding to entries in the FISH table.
+     * When type is BOSS, this is the ID of the boss fish, corresponding to an entry in the FISH table.
+     */
     char targets[20];
 } Goal;
 
@@ -159,5 +182,4 @@ void cast(int *defaults);
  * Display map lore to the user. This should only be called as a pointer from the fishing menu
  */
 void loreDisplay();
-
 #endif

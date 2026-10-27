@@ -252,6 +252,7 @@ void mapLoop(int mapId)
     {
         memcpy(mapSpawn.entries, profiles[activeProfile].spawnTable, 0x190);
     }
+    LivewellData fish;
     while (true)
     {
         luck = rand() % 101;
@@ -260,6 +261,54 @@ void mapLoop(int mapId)
             cprintf("   ", (Color[]){mapColor.bg, mapColor.fg, mapColor.bg, mapColor.fg});
             clearScreen();
         }
+
+        char targetsString[0x1A * mapGoal.variation];
+        // create the list of fish left to catch in format Fish A, Fish B, Fish C
+        if (mapGoal.type == TARGET)
+        {
+            for (int i = 0; i < (int)mapGoal.variation; i++)
+            {
+                if (i != -1)
+                {
+                    char *fshPath = mapFish.messages[mapGoal.targets[i]];
+                    char buf[32];
+                    snprintf(buf, 32, "fsh/%s.fsh", fshPath);
+                    fish = loadFishMeta(buf);
+                    strcat(targetsString, fish.name);
+                    if (i < (int)mapGoal.variation - 1)
+                    {
+                        strcat(targetsString, ", ");
+                    }
+                }
+            }
+        }
+        char statusMessage[0x100];
+        for (int i = 0; i < 0x100; i++)
+        {
+            statusMessage[i] = 0;
+        }
+        strcat(statusMessage, mapTitle.name);
+        strcat(statusMessage, "\n");
+        char statusBuff[0x100];
+        switch (mapStatus.messages[0].idx)
+        {
+        case 0:
+            snprintf(statusBuff, 0x100, mapStatus.messages[0].msg, profiles[activeProfile].progression.weight / 1000, (int)((float)profiles[activeProfile].progression.weight / (float)profiles[activeProfile].progression.goalWeight * 100.f));
+            break;
+        case 1:
+            snprintf(statusBuff, 0x100, mapStatus.messages[0].msg, profiles[activeProfile].progression.goalWeight / 1000);
+            break;
+        case 3:
+            snprintf(statusBuff, 0x100, mapStatus.messages[0].msg, (float)profiles[activeProfile].progression.weight / 1000.0f, (float)profiles[activeProfile].progression.goalWeight / 1000.0f, (int)((float)profiles[activeProfile].progression.weight / (float)profiles[activeProfile].progression.goalWeight * 100.f));
+            break;
+        case 4:
+            snprintf(statusBuff, 0x100, mapStatus.messages[0].msg, targetsString);
+            break;
+        }
+        strcat(statusMessage, statusBuff);
+        strcat(statusMessage, "\n");
+        snprintf(statusBuff, 0x100, "Fish chance: %d%%", luck);
+        strcat(statusMessage, statusBuff);
         locate(0, 0);
         printf("%-15s", "");
         locate(0, 0);
@@ -275,19 +324,37 @@ void mapLoop(int mapId)
         }
         int tx = rand() % 20;
         int ty = rand() % 20;
-        if (profiles[activeProfile].progression.goalWeight <= profiles[activeProfile].progression.weight)
+        switch (mapGoal.type)
         {
-            profiles[activeProfile].progression.mapName[0] = 'w';
-            profiles[activeProfile].progression.mapName[1] = 'i';
-            profiles[activeProfile].progression.mapName[2] = 'n';
-            profiles[activeProfile].progression.mapName[3] = '\0';
+        case WEIGHT:
+            if (profiles[activeProfile].progression.goalWeight <= profiles[activeProfile].progression.weight)
+                strcpy(profiles[activeProfile].progression.mapName, "win");
+            break;
+        case TARGET:
+            int complete = true;
+            for (int i = 0; i < 20; i++)
+            {
+                if (profiles[activeProfile].progression.targets[i] != -1)
+                {
+                    complete = false;
+                    break;
+                }
+            }
+            if (complete)
+                strcpy(profiles[activeProfile].progression.mapName, "win");
+            break;
+        default:
             break;
         }
-        int sel = fishingMenu(mapTitle.name, (int[]){tx, ty}, cast, loreDisplay, exitMap, (Color[]){mapColor.bg, mapColor.fg});
-        if (sel == 5)
+        if (strcmp(profiles[activeProfile].progression.mapName, "win") == 0)
+            break;
+        int sel = fishingMenu(statusMessage, (int[]){tx, ty}, cast, loreDisplay, exitMap, (Color[]){mapColor.bg, mapColor.fg});
+        if (sel == 6)
         {
             break;
         }
+        if (strcmp(profiles[activeProfile].progression.mapName, "win") == 0)
+            break;
     }
 }
 
@@ -313,6 +380,11 @@ void cast(int *values)
         cprintf("   ", (Color[]){BLUE, WHITE, BLUE, WHITE});
         clearScreen();
     }
+    int summonBoss = false;
+    if (mapGoal.type == BOSS)
+    {
+        summonBoss = profiles[activeProfile].progression.goalWeight <= profiles[activeProfile].progression.totalLuck;
+    }
     int tries;
     int roll;
     int tx = *values;
@@ -323,6 +395,36 @@ void cast(int *values)
         luck = 100;
     int spotId = tx + ty * 20;
     drawMap(tx, ty);
+    if (summonBoss)
+    {
+        for (int i = 0; i < 10; i++)
+        {
+            sleep((int)((100.0 - (float)luck) / 100.0f) * rand() % 20 + 1);
+            roll = rand() % 151;
+            if (roll < luck)
+            {
+                printf("BOSS\n");
+                char *fishName = mapFish.messages[(int)mapGoal.variation];
+                char buf[32];
+                snprintf(buf, 32, "fsh/%s.fsh", fishName);
+                FishData fish = loadFish(buf);
+                stopSound();
+                playSound("snd/sea_boss.mp3", true); // why do I hear boss music?
+                int *result = fightFish(fish, luck);
+                stopSound();
+                if (*result != 0)
+                {
+                    strcpy(profiles[i].progression.mapName, "win"); // we beat the boss
+                    return;
+                }
+                else
+                {
+                    snprintf(buf, 32, "snd/%s", mapMusic.filename); // lost to boss, continue playing
+                    playSound(buf, 1);
+                }
+            }
+        }
+    }
     chcolor((Color[]){mapStatus.messages[2].bg, mapStatus.messages[2].fg});
     locate(mapStatus.messages[2].y, mapStatus.messages[2].x);
     printf(mapStatus.messages[2].msg, mapMessage.messages[rand() % 4]);
@@ -408,7 +510,17 @@ void cast(int *values)
                 locate(0, 0);
                 int *result = fightFish(fish, luck);
                 if (*result != 0)
+                {
                     mapSpawn.entries[spotId] = strcmp(fishName, "boot") == 0 ? 252 : 254;
+                    if (mapGoal.type == TARGET && *result > 0)
+                    {
+                        for (unsigned int i = 0; i < mapGoal.variation; i++)
+                        {
+                            if (profiles[activeProfile].progression.targets[i] == mapSpawn.entries[spotId])
+                                profiles[activeProfile].progression.targets[i] = -1;
+                        }
+                    }
+                }
                 profiles[activeProfile].progression.weight += *result * (fish.largeUnits ? 1000 : 1);
                 return;
             }
@@ -463,6 +575,10 @@ void unloadMap()
     profiles[activeProfile].progression.goalWeight = 0;
     profiles[activeProfile].progression.weight = 0;
     profiles[activeProfile].progression.playing = -1;
+    for (int i = 0; i < 20; i++)
+    {
+        profiles[activeProfile].progression.targets[i] = 0;
+    }
     /*free(mapTitle.name);
     free(&mapLayout);
     free(&mapFish);

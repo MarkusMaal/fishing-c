@@ -24,6 +24,31 @@ FishData loadFish(char *fileName)
     }
     return fish;
 }
+LivewellData loadFishMeta(char *fileName)
+{
+
+    FILE *infile;
+    infile = fopen(fileName, "rb");
+    Record rStruct;
+    LivewellData lwell;
+    int c;
+    while ((c = fgetc(infile)) != EOF)
+    {
+        fseek(infile, -1, SEEK_CUR);
+        fread(&rStruct, sizeof(Record), 1, infile);
+        int next = ftell(infile) + rStruct.total * 0x10;
+        if (strcmp(rStruct.label, "LWELL") == 0)
+        {
+            if (fread(&lwell, sizeof(LivewellData), 1, infile) != 1)
+            {
+                printf("Error reading fish data\n");
+                readKey();
+            }
+        }
+        fseek(infile, next, SEEK_SET);
+    }
+    return lwell;
+}
 
 int *fightFish(FishData fish, int luck)
 {

@@ -34,6 +34,24 @@ typedef enum : char
     UP3,
 } MovementPattern;
 
+typedef enum
+{
+    COMMON,
+    UNCOMMON,
+    SEMIRARE,
+    RARE,
+    LEGENDARY,
+    ONE_OF_KIND
+} RarityLevel;
+
+typedef struct
+{
+    char name[0x18];
+    int spawnCount;
+    RarityLevel rarity;
+    char spawnMaps[0x10];
+} LivewellData;
+
 typedef struct
 {
     char geometry[4][0x10][0x40];
@@ -57,5 +75,5 @@ typedef struct
 
 FishData loadFish(char *fileName);
 int *fightFish(FishData fish, int luck);
-
+LivewellData loadFishMeta(char *fileName);
 #endif
