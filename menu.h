@@ -69,4 +69,5 @@ void settingsMenu(int *sel);
 void dummyFunc();
 void toggleSetting(int *sel);
 void nameEntry();
+void devUnlock();
 #endif

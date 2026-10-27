@@ -13,6 +13,7 @@ Msg mapMessage;
 ByteTable mapSpawn;
 ByteTable mapLuck;
 Lore mapLore;
+int luck;
 
 void loadMap(char *fileName)
 {
@@ -20,6 +21,7 @@ void loadMap(char *fileName)
     infile = fopen(fileName, "rb");
     Record rStruct;
     int c;
+    int genSpawn = true;
     while ((c = fgetc(infile)) != EOF)
     {
         fseek(infile, -1, SEEK_CUR);
@@ -119,7 +121,9 @@ void loadMap(char *fileName)
             {
                 printf("Error reading fish spawn table\n");
                 readKey();
+                genSpawn = true;
             }
+            genSpawn = false;
         }
         else if (strcmp(rStruct.label, "LUCK") == 0)
         {
@@ -151,6 +155,7 @@ void loadMap(char *fileName)
 void drawMap(int dx, int dy)
 {
     clearScreen();
+    locate(mapStatus.messages[0].idx == 3 ? 2 : 0, 0);
     int drawnChars = 0;
     int bait_y = (float)dy / 20.0f * (float)(mapWater.h - 2.0f);
     int bait_x = (float)dx / 20.0f * ((float)(mapWater.w - 12.0f));
@@ -194,6 +199,7 @@ void drawMap(int dx, int dy)
     for (int i = 0; i < mapStatus.header.chunkCount; i++)
     {
         locate(mapStatus.messages[i].y, mapStatus.messages[i].x);
+        chcolor((Color[]){mapStatus.messages[i].bg, mapStatus.messages[i].fg});
         switch (mapStatus.messages[i].idx)
         {
         case 0:
@@ -202,9 +208,13 @@ void drawMap(int dx, int dy)
         case 1:
             printf(mapStatus.messages[i].msg, profiles[activeProfile].progression.goalWeight / 1000);
             break;
+        case 3:
+            printf(mapStatus.messages[i].msg, (float)profiles[activeProfile].progression.weight / 1000.0f, (float)profiles[activeProfile].progression.goalWeight / 1000.0f, (int)((float)profiles[activeProfile].progression.weight / (float)profiles[activeProfile].progression.goalWeight * 100.f));
+            break;
         default:
             break;
         }
+        chcolor((Color[]){mapColor.bg, mapColor.fg});
     }
     locate(y, x);
     printf("\n");
@@ -223,6 +233,15 @@ void mapLoop(int mapId)
     }
     while (true)
     {
+        luck = rand() % 101;
+        for (int i = 0; i < 999; i++)
+        {
+            cprintf("   ", (Color[]){mapColor.bg, mapColor.fg, mapColor.bg, mapColor.fg});
+            clearScreen();
+        }
+        locate(0, 0);
+        printf("%-15s", "");
+        locate(0, 0);
         memcpy(profiles[activeProfile].spawnTable, mapSpawn.entries, 0x190);
         if (profiles[activeProfile].options.autosave)
         {
@@ -268,24 +287,28 @@ void loreDisplay()
 
 void cast(int *values)
 {
+    for (int i = 0; i < 999; i++)
+    {
+        cprintf("   ", (Color[]){BLUE, WHITE, BLUE, WHITE});
+        clearScreen();
+    }
     int tries;
-    int luck;
     int roll;
     int tx = *values;
     int ty = values[1];
-    luck = rand() % 101;
     profiles[activeProfile].progression.throws++;
     profiles[activeProfile].progression.totalLuck += luck;
     if (luck > 100)
         luck = 100;
     int spotId = tx + ty * 20;
     drawMap(tx, ty);
+    chcolor((Color[]){mapStatus.messages[2].bg, mapStatus.messages[2].fg});
     locate(mapStatus.messages[2].y, mapStatus.messages[2].x);
     printf(mapStatus.messages[2].msg, mapMessage.messages[rand() % 4]);
     fflush(stdout);
     // printf("[DEBUG] Fish chance: %d%%\n", luck);
     int spotLuck = mapLuck.entries[spotId];
-    tries = ty + 1;
+    tries = tx + 1;
     int playedCricketSound = false;
     int playedPopSound = false;
     for (int i = 0; i < tries; i++)
@@ -306,14 +329,15 @@ void cast(int *values)
                 // printf("[DEBUG] Removed boot from %d\n", spotId);
                 mapSpawn.entries[spotId] = 255;
             }
-            if (mapSpawn.entries[spotId] == 255)
+            if (mapSpawn.entries[spotId] >= 252)
             {
                 // printf("[DEBUG] No fish at %d\n", spotId);
                 locate(mapStatus.messages[2].y, mapStatus.messages[2].x);
                 printf(mapStatus.messages[2].msg, mapMessage.messages[rand() % 4]);
                 fflush(stdout);
+                mapSpawn.entries[spotId] = 253;
             }
-            if (spotLuck < roll && (int)mapSpawn.entries[spotId] != 255)
+            if (spotLuck < roll && (int)mapSpawn.entries[spotId] < 252)
             {
                 // printf("[DEBUG] Required luck %d at %d\n", spotLuck, spotId);
                 locate(mapStatus.messages[2].y, mapStatus.messages[2].x);
@@ -345,6 +369,7 @@ void cast(int *values)
                     sleep((int)((100.0 - (float)luck) / 100.0f) * rand() % 20 + 1);
                     continue;
                 }
+
                 clearScreen();
                 printf("SPOT %d\n", spotId);
                 printf("FISH (ID: %d)\n", mapSpawn.entries[spotId]);
@@ -353,9 +378,16 @@ void cast(int *values)
                 char buf[32];
                 snprintf(buf, 32, "fsh/%s.fsh", fishName);
                 FishData fish = loadFish(buf);
+
+                for (int i = 0; i < 999; i++)
+                {
+                    cprintf("   ", (Color[]){BLUE, WHITE, BLUE, WHITE});
+                    clearScreen();
+                }
+                locate(0, 0);
                 int *result = fightFish(fish, luck);
                 if (*result != 0)
-                    mapSpawn.entries[spotId] = 255;
+                    mapSpawn.entries[spotId] = strcmp(fishName, "boot") == 0 ? 252 : 254;
                 profiles[activeProfile].progression.weight += *result * (fish.largeUnits ? 1000 : 1);
                 return;
             }
@@ -372,9 +404,9 @@ void cast(int *values)
             }
             fflush(stdout);
         }
-        ty--;
-        if (ty < 0)
-            ty = 0;
+        tx--;
+        if (tx < 0)
+            tx = 0;
     }
     clearScreen();
 }

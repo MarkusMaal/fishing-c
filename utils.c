@@ -86,6 +86,19 @@ char *readKey()
     return str;
 }
 
+void chcolor(Color *colors)
+{
+    Color bg = *colors;
+    Color fg = colors[1];
+    int bgI = 40 + (int)bg;
+    int fgI = 30 + (int)fg;
+    if (bgI > 47)
+        bgI += 52;
+    if (fgI > 37)
+        fgI += 52;
+    printf("\x1b[%d;%dm", bgI, fgI);
+}
+
 void cprintf(char *string, Color *colors)
 {
     Color bg = *colors;

@@ -7,7 +7,7 @@
 typedef struct
 {
     Record header;
-    char name[0x10];
+    char name[0x20];
 } Title;
 
 typedef struct
@@ -63,7 +63,8 @@ typedef struct
     int idx;
     int x;
     int y;
-    int padding;
+    Color bg;
+    Color fg;
 } StMsgEntry;
 
 typedef struct
@@ -115,6 +116,7 @@ extern Msg mapMessage;
 extern ByteTable mapSpawn;
 extern ByteTable mapLuck;
 extern Lore mapLore;
+extern int luck;
 
 /**
  * Loads the map from a specified location to memory

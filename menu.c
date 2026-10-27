@@ -21,6 +21,14 @@ void dummyFunc()
 {
 }
 
+void devUnlock()
+{
+    for (int i = 0; i < 0x10; i++)
+    {
+        profiles[activeProfile].progression.mapUnlocks[i] |= 0x01;
+    }
+}
+
 void actionTester(int *sel)
 {
     clearScreen();
@@ -33,10 +41,11 @@ void actionTester(int *sel)
         MenuItem *menu = (MenuItem[]){
             (MenuItem){BUTTON, "Fishing menu", &dummy, -1, NULL, &testFishingMenu},
             (MenuItem){BUTTON, "Battle test", &dummy, -1, NULL, &testFishBattle},
+            (MenuItem){BUTTON, "100%% unlock", &dummy, -1, NULL, &devUnlock},
             (MenuItem){BUTTON, "Return to previous menu", &dummy, -1, NULL, &ret},
         };
         void (*menuPtr)(int *);
-        menuPtr = printMenu("Fishing C > Main menu > Developer > Action test", menu, 3, sel, (Color[]){BLACK, WHITE});
+        menuPtr = printMenu("Fishing C > Main menu > Developer > Action test", menu, 4, sel, (Color[]){BLACK, WHITE});
         menuPtr(sel);
     }
 }
@@ -413,7 +422,7 @@ void playMap(int *sel)
     playSound(buf, 1);
     printf("Loaded map: %s\n", mapTitle.name);
     mapLoop(*sel);
-    if (strcmp(profiles[activeProfile].progression.mapName, "win") == 0)
+    if (strcmp(profiles[activeProfile].progression.mapName, "win") == 0 && profiles[activeProfile].progression.throws > 0) // we check this to avoid floating point exception (it bad)
     {
         stopSound();
         playSound("snd/win_stage.mp3", false);
@@ -504,18 +513,40 @@ int fishingMenu(char *title, int *defaults, void *fCast, void *fLore, void *fExi
     int sel = 0;
     while (1 < 2)
     {
-        MenuItem menu[6] =
+        MenuItem menu[7] =
             {
                 (MenuItem){BUTTON, "Cast", &dummy, -1, NULL, fCast},
                 (MenuItem){SELECTOR, "Distance", defaults, 20, NULL, NULL},
                 (MenuItem){SELECTOR, "Angle", &defaults[1], 20, NULL, NULL},
                 (MenuItem){BUTTON, "Save game", &dummy, -1, NULL, &saveActiveProfile},
                 (MenuItem){BUTTON, "Lore", &dummy, -1, NULL, fLore},
+                (MenuItem){BUTTON, "Scouting map", &dummy, -1, NULL, &dummyFunc},
                 (MenuItem){BUTTON, "Exit", &dummy, -1, NULL, fExit},
         };
         void (*menuPtr)(int *);
         void (*nargPtr)();
-        menuPtr = printMenu(title, menu, 6, &sel, colors);
+        menuPtr = printMenu(title, menu, 7, &sel, colors);
+        if (sel == 5)
+        {
+            clearScreen();
+            char *labels = "0123456789ABCDEFGHIJ";
+            printf("DA%s\n", labels);
+            for (int i = 0; i < 20; i++)
+            {
+                printf("%c ", labels[i]);
+                for (int j = 0; j < 20; j++)
+                {
+                    printf("%c", mapSpawn.entries[i * 20 + j] == 252 ? 'B' : mapSpawn.entries[i * 20 + j] == 253 ? 'N'
+                                                                         : mapSpawn.entries[i * 20 + j] == 254   ? 'F'
+                                                                                                                 : ((j % 2) == 0 ? (i % 2 == 0 ? '_' : ' ') : (i % 2 == 0 ? ' ' : '_')));
+                }
+                printf("\n");
+            }
+            printf("\nPress any key to continue . . . ");
+            readKey();
+            clearScreen();
+            continue;
+        }
         if (sel == 0)
             menuPtr(defaults);
         if (sel != 0)
@@ -523,7 +554,7 @@ int fishingMenu(char *title, int *defaults, void *fCast, void *fLore, void *fExi
             nargPtr = (void (*)(void))menuPtr;
             nargPtr();
         }
-        if (sel == 0 || sel == 5)
+        if (sel == 0 || sel == 6)
         {
             break;
         }

@@ -154,4 +154,6 @@ void locate(int row, int col);
  */
 char *strrpl(char *str, char *find, char *replace);
 
+void chcolor(Color *colors);
+
 #endif
