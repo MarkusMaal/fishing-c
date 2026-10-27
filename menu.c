@@ -106,6 +106,14 @@ void showGlobalVariables()
 
     printf("\nPress any key to continue . . . ");
     readKey();
+    clearScreen();
+    printf("\nFishing C > Main menu > Developer > Variables\n\nGlobal variable listing:\n\n");
+    printf("Active profile:\n");
+    printf("   ID: %d\n", activeProfile);
+    printf("   Name: %s\n", profiles[activeProfile].options.name);
+    printf("   Last save: %s @ %s\n", profiles[activeProfile].profileHeader.saveDate, profiles[activeProfile].profileHeader.saveTime);
+    printf("\nPress any key to continue . . . ");
+    readKey();
     printf("\n");
 }
 
