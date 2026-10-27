@@ -41,6 +41,7 @@ Compiling instructions will not be provided until final version is publically av
 
 - Profile system
 - "Awesome" menu system
+- Maps: Beginner's lake, Experience river, Moon lake, Expert sea
 - Some of the settings (all the toggles and name changing)
 - Saving and autosaving
 - Main progression flow for unlocking new maps
