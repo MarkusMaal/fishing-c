@@ -579,6 +579,23 @@ void rootMenu()
                 rkey = readKey();
             }
         }
+        if (!(profiles[activeProfile].progression.mapUnlocks[0] & 0x02))
+        {
+            int weightSum = 0;
+            for (int i = 0; i < 16; i++)
+            {
+                weightSum += profiles[activeProfile].livewell[i].bestWeight;
+            }
+            if (weightSum >= 200000)
+            {
+                profiles[activeProfile].progression.mapUnlocks[0] |= 0x02;
+                clearScreen();
+                printf("\nCongratulations!\n\nSince you have over 200kg of fish in\nyour livewell, we've given you an option\nto change the color of your fishing rod.");
+                printf("\n\nTo change the color go to Settings in main\nmenu and find the \"Rod color\" option.\n\nPress any key to continue . . . ");
+                readKey();
+                clearScreen();
+            }
+        }
         MenuItem *menu = (MenuItem[]){
             (MenuItem){BUTTON, "Start", &dummy, -1, NULL, &startMenu},
             (MenuItem){BUTTON, "Save game", &dummy, -1, NULL, &saveActiveProfile},
@@ -718,6 +735,12 @@ void playMap(int *sel)
     mapLoop(*sel);
     int selMap = profiles[activeProfile].progression.playing;
     int won = strcmp(profiles[activeProfile].progression.mapName, "win") == 0;
+    int coverageC = 0;
+    for (int i = 0; i < 400; i++)
+    {
+        coverageC += ((unsigned char)profiles[activeProfile].spawnTable[i] > mapFish.header.chunkCount && (unsigned char)profiles[activeProfile].spawnTable[i] != 255) ? 1 : 0;
+    }
+    int coveragePerc = coverageC * 100 / 400;
     if (won && profiles[activeProfile].progression.throws > 0) // we check this to avoid floating point exception (it bad)
     {
         if (!mapsList[selMap].secret)
@@ -729,7 +752,7 @@ void playMap(int *sel)
         {
             clearScreen();
             printf("\nFishing C > You win!\n\nCongratulations!\n\n");
-            printf("You have finished the %s!\n\nTotal fish: %.2f kg\nAverage luck: %d%%\n\n", mapTitle.name, (float)profiles[activeProfile].progression.weight / 1000.0f, profiles[activeProfile].progression.totalLuck / profiles[activeProfile].progression.throws);
+            printf("You have finished the %s!\n\nTotal fish: %.2f kg\nAverage luck: %d%%\nCoverage: %d%%\n\n", mapTitle.name, (float)profiles[activeProfile].progression.weight / 1000.0f, profiles[activeProfile].progression.totalLuck / profiles[activeProfile].progression.throws, coveragePerc);
             if (!profiles[activeProfile].progression.mapUnlocks[mapsList[*sel].idx] & 0x01)
             {
                 if (!mapsList[*sel + 1].secret)
