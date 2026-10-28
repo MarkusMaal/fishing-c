@@ -72,4 +72,6 @@ void toggleSetting(int *sel);
 void nameEntry();
 void devUnlock();
 void deDev(int *sel);
+void credits();
+void devLoadMap(int *sel);
 #endif

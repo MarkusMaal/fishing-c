@@ -1,17 +1,17 @@
                    Codename MissingSalmon
 
 
-                       - Main code -
+                       ~ Main code ~
 
                         Markus Maal
 
 
-                     - Created using -
+                     ~ Created using ~
 
                     Visual Studio Code
 
 
-                         - Music -
+                         ~ Music ~
 
                Electro Sketch - Kevin MacLeod
                Pure attitude - Kevin MacLeod
@@ -21,7 +21,7 @@
                Death and Axes - Kevin MacLeod
                Take a Chance - Kevin MacLeod
               Always Hopeful - Silent Partner
-                  Frank Nora - MC Ballad T
+                  MC Ballad T - Frank Nora
                Water Prelude - Kevin MacLeod
 
         Kevin MacLeod's music from incompetech.com
@@ -29,23 +29,20 @@ Licensed under Creative Commons: By Attribution 3.0 License
          http://creativecommons.org/licenses/by/3.0/
 
 
-                     - Sound library -
+                     ~ Sound library ~
 
                 C Audio Player by saad-out
 
 
-                      - Ported from -
+                      ~ Ported from ~
 
                      Fishing Batch 1.2
 
 
-                    - Special thanks -
+                    ~ Special thanks ~
 
      To everyone that writes C tutorials to allow me to
                     program this port!
 
 
-                      - That's it! -
-
-%s
-%s
+                      ~ That's it! ~

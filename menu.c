@@ -30,6 +30,29 @@ void devUnlock()
     }
 }
 
+void devLoadMap(int *sel)
+{
+    *sel = 0;
+    char buff[8];
+    clearScreen();
+    printf("\nPlease provide name of map file without path/extension: ");
+    if (fgets(buff, 8, stdin) == NULL)
+        return;
+    if (buff[strlen(buff) - 1] != '\n')
+        return;
+    buff[strlen(buff) - 1] = '\0'; // remove newline
+    char *backup = malloc(0x8);
+    char *nameBackup = malloc(0x20);
+    strcpy(backup, mapsList[0].file);
+    strcpy(nameBackup, mapsList[0].name);
+    strcpy(mapsList[*sel].file, buff);
+    strcpy(mapsList[*sel].name, buff);
+    playMap(sel);
+    strcpy(mapsList[*sel].file, backup);
+    strcpy(mapsList[*sel].name, nameBackup);
+    free(backup);
+}
+
 void actionTester(int *sel)
 {
     clearScreen();
@@ -43,10 +66,12 @@ void actionTester(int *sel)
             (MenuItem){BUTTON, "Fishing menu", &dummy, -1, NULL, &testFishingMenu},
             (MenuItem){BUTTON, "Battle test", &dummy, -1, NULL, &testFishBattle},
             (MenuItem){BUTTON, "100% unlock", &dummy, -1, NULL, &devUnlock},
+            (MenuItem){BUTTON, "Credits", &dummy, -1, NULL, &credits},
+            (MenuItem){BUTTON, "Load a map", &dummy, -1, NULL, &devLoadMap},
             (MenuItem){BUTTON, "Return to previous menu", &dummy, -1, NULL, &ret},
         };
         void (*menuPtr)(int *);
-        menuPtr = printMenu("Fishing C > Main menu > Developer > Action test", menu, 4, sel, (Color[]){BLACK, WHITE});
+        menuPtr = printMenu("Fishing C > Main menu > Developer > Action test", menu, 6, sel, (Color[]){BLACK, WHITE});
         menuPtr(sel);
     }
 }
@@ -157,6 +182,141 @@ void soundTest()
         {
             break;
         }
+    }
+}
+
+void credits()
+{
+    stopSound();
+    clearScreen();
+    chcolor((Color[]){BLACK, LWHITE});
+    playSound("snd/credits_roll.mp3", false);
+    for (int i = 0; i < 999; i++)
+        printf("\n");
+    sleep(1);
+    FILE *file = fopen("txt/credits.txt", "r");
+    char line[256];
+    if (file != NULL)
+    {
+        while (fgets(line, sizeof(line), file))
+        {
+            for (int i = 0; i < 10; i++)
+                printf(" ");
+            int white = false;
+            for (int i = 0; i < 256; i++)
+            {
+                if (line[i] == '\0')
+                    break;
+                if (line[i] == '~')
+                {
+                    if (!white)
+                        printf(" ");
+                    chcolor((Color[]){white ? BLACK : WHITE, white ? LWHITE : BLACK});
+                    white = !white;
+                    if (!white)
+                        printf(" ");
+                    continue;
+                }
+                printf("%c", line[i]);
+            }
+            sleep(1);
+        }
+        printf("\n");
+        sleep(1);
+        if (profiles[activeProfile].progression.solmn == TRUE)
+        {
+            printf("             A salmon has been found. It has now become   Õ§   s    \n");
+        }
+        else if (profiles[activeProfile].options.difficulty == SUPER_HARD)
+        {
+            printf("                    Thanks for really completing this game.\n");
+        }
+        else
+        {
+
+            printf("  Thanks for playing this game. As you've made it so far, I'd like to give you a\n");
+            sleep(1);
+            printf("                      new difficulty mode: Super Hard\n");
+            if (profiles[activeProfile].options.difficulty == EASY)
+            {
+                sleep(1);
+                printf("\n");
+                sleep(1);
+                printf("   But because you played on easy mode, you won't have this, cuz u're a n00b.\n");
+                sleep(1);
+                printf("            Try Normal or Hard to unlock Super Hard difficulty\n");
+            }
+        }
+        sleep(1);
+        fclose(file);
+        for (int i = 0; i < 40; i++)
+        {
+            printf("\n");
+            sleep(1);
+        }
+        clearScreen();
+    }
+    FILE *copyFile = fopen("txt/copyright.txt", "r");
+    if (copyFile != NULL)
+    {
+        fread(&line, 256, 1, copyFile);
+        printf("%s", line);
+        sleep(2);
+        locate(0, 0);
+        chcolor((Color[]){BLACK, WHITE});
+        printf("%s", line);
+        usleep(66667);
+        locate(0, 0);
+        chcolor((Color[]){BLACK, LBLACK});
+        printf("%s", line);
+        usleep(66667);
+        clearScreen();
+        sleep(2);
+    }
+    Color colors[10] = {BLACK, LBLACK, BLACK, WHITE, BLACK, LWHITE, BLACK, WHITE, BLACK, LBLACK};
+    if (profiles[activeProfile].progression.solmn != FIND_ME_IF_YOU_CAN)
+    {
+        clearScreen();
+        for (int cIdx = 0; cIdx < ((profiles[activeProfile].progression.solmn == READY) ? 12 : 8); cIdx += 2)
+        {
+            locate(0, 0);
+            chcolor(&colors[cIdx]);
+            for (int i = 0; i < 9; i++)
+            {
+                printf("     \n");
+            }
+            if (profiles[activeProfile].progression.solmn == READY)
+                printf("%52s\n%50s\n", getObString(3), getObString(4));
+            else
+                printf("%52s\n%52s.\n%47s\n", getObString(0), getObString(1), getObString(2));
+            if (cIdx != 4)
+                usleep(66667);
+            else
+                sleep((profiles[activeProfile].progression.solmn == READY) ? 2 : 10);
+        }
+        clearScreen();
+        usleep(66667);
+        if (profiles[activeProfile].progression.solmn == TRUE)
+        {
+            clearScreen();
+            printf("\n%s %s %s %s\n%s %s\n\n%s %s\n\nPress any key to continue . . . ",
+                   getObString(5),
+                   getObString(6),
+                   getObString(7),
+                   getObString(8),
+                   getObString(9),
+                   getObString(10),
+                   getObString(11),
+                   getObString(12));
+            readKey();
+            printf("\n");
+        }
+    }
+    stopSound();
+    chcolor((Color[]){BLACK, WHITE});
+    if (profiles[activeProfile].progression.solmn != TRUE)
+    {
+        playSound("snd/menu_bg.mp3", true);
     }
 }
 
@@ -304,6 +464,8 @@ void rootMenu()
                 }
                 else if (strcmp(rkey, "110") == 0 || strcmp(rkey, "78") == 0)
                 {
+                    profiles[activeProfile].progression.playing = -1;
+                    strcpy(profiles[activeProfile].progression.mapName, "menu");
                     break;
                 }
                 rkey = readKey();
@@ -317,10 +479,17 @@ void rootMenu()
             (MenuItem){DISABLED_BUTTON, "Livewell", &dummy, -1, NULL, &testItemEntry},
             (MenuItem){BUTTON, "Exit", &dummy, -1, NULL, &ret},
             (MenuItem){BUTTON, "Developer", &dummy, -1, NULL, &devMenu},
+            (MenuItem){BUTTON, "Dummy menu entry", &dummy, -1, NULL, &testItemEntry},
         };
+        if (profiles[activeProfile].progression.mapUnlocks[0] & 0x08)
+        {
+            menu[7] = menu[6];
+            menu[6] = menu[5];
+            menu[5] = (MenuItem){BUTTON, "Credits", &dummy, -1, NULL, &credits};
+        }
         void (*menuPtr)(int *);
         void (*nargPtr)();
-        menuPtr = printMenu("Fishing C > Main menu", menu, enableDevMenu ? 7 : 6, &sel, (Color[]){BLACK, WHITE});
+        menuPtr = printMenu("Fishing C > Main menu", menu, (enableDevMenu ? 7 : 6) + (profiles[activeProfile].progression.mapUnlocks[0] & 0x08 ? 1 : 0), &sel, (Color[]){BLACK, WHITE});
         if (sel == 1)
         {
             nargPtr = (void (*)(void))menuPtr;
@@ -438,29 +607,35 @@ void playMap(int *sel)
     playSound(buf, 1);
     printf("Loaded map: %s\n", mapTitle.name);
     mapLoop(*sel);
-    if (strcmp(profiles[activeProfile].progression.mapName, "win") == 0 && profiles[activeProfile].progression.throws > 0) // we check this to avoid floating point exception (it bad)
+    int selMap = profiles[activeProfile].progression.playing;
+    int won = strcmp(profiles[activeProfile].progression.mapName, "win") == 0;
+    if (won && profiles[activeProfile].progression.throws > 0) // we check this to avoid floating point exception (it bad)
     {
-        stopSound();
-        playSound("snd/win_stage.mp3", false);
+        if (!mapsList[selMap].secret)
+        {
+            stopSound();
+            playSound("snd/win_stage.mp3", false);
+        }
         profiles[activeProfile]
             .progression.mapUnlocks[mapsList[*sel].idx] = profiles[activeProfile]
                                                               .progression.mapUnlocks[mapsList[*sel].idx] |
                                                           1;
-        clearScreen();
-        printf("\nFishing C > You win!\n\nCongratulations!\n\n");
-        printf("You have finished the %s!\n\nTotal fish: %.2f kg\nAverage luck: %d%%\n\n", mapTitle.name, (float)profiles[activeProfile].progression.weight / 1000.0f, profiles[activeProfile].progression.totalLuck / profiles[activeProfile].progression.throws);
-        printf("Press any key to continue . . . ");
-        readKey();
+        if (!mapsList[selMap].secret)
+        {
+            clearScreen();
+            printf("\nFishing C > You win!\n\nCongratulations!\n\n");
+            printf("You have finished the %s!\n\nTotal fish: %.2f kg\nAverage luck: %d%%\n\n", mapTitle.name, (float)profiles[activeProfile].progression.weight / 1000.0f, profiles[activeProfile].progression.totalLuck / profiles[activeProfile].progression.throws);
+            printf("Press any key to continue . . . ");
+            readKey();
+        }
     }
-    int selMap = profiles[activeProfile].progression.playing;
     unloadMap();
     int secretMapCount = 0;
     for (int i = 0; i < mapsCount; i++)
     {
         secretMapCount += mapsList[i].secret ? 1 : 0;
     }
-    playSound("snd/menu_bg.mp3", 1);
-    if (mapsCount - 1 - secretMapCount == selMap)
+    if (won && (mapsCount - 1 - secretMapCount == selMap || mapsList[selMap].secret))
     {
         if (!(profiles[activeProfile].progression.storiesTold[0] & 0x02) && profiles[activeProfile].options.storytell)
         {
@@ -470,10 +645,16 @@ void playMap(int *sel)
             readKey();
             profiles[activeProfile].progression.storiesTold[0] |= 0x02;
         }
-        if (profiles[activeProfile].options.difficulty == SUPER_HARD)
-            profiles[activeProfile].progression.solmn = READY;     // enable secret map
-        profiles[activeProfile].progression.mapUnlocks[0] |= 0x04; // unlock super hard difficulty/end credits
+        if (profiles[activeProfile].progression.solmn == READY)
+            profiles[activeProfile].progression.solmn = TRUE; // enable creepy mode
+        else if (profiles[activeProfile].options.difficulty == SUPER_HARD)
+            profiles[activeProfile].progression.solmn = READY; // enable secret map
+        if (profiles[activeProfile].options.difficulty != EASY)
+            profiles[activeProfile].progression.mapUnlocks[0] |= 0x04; // unlock super hard difficulty
+        profiles[activeProfile].progression.mapUnlocks[0] |= 0x08;     // unlock credits
+        credits();
     }
+    playSound("snd/menu_bg.mp3", 1);
     if (profiles[activeProfile].options.autosave)
         saveProfile(profiles[activeProfile], activeProfile);
     clearScreen();
@@ -485,7 +666,7 @@ void startMenu(int *sel)
     int checkEx = ex + 1;
     last = *sel;
     *sel = 0;
-    MenuItem menu[mapsCount];
+    MenuItem menu[mapsCount + (profiles[activeProfile].progression.solmn == READY)];
     for (int i = 0; i < mapsCount; i++)
     {
         char unlock = true;
@@ -497,14 +678,14 @@ void startMenu(int *sel)
         {
             char *nameBuf = malloc(32);
             strcpy(nameBuf, mapsList[i].name);
-            menu[i] = (MenuItem){unlock ? BUTTON : DISABLED_BUTTON, unlock ? nameBuf : "Locked", &dummy, -1, NULL, &playMap};
+            menu[i] = (MenuItem){(unlock || mapsList[i].secret) ? BUTTON : DISABLED_BUTTON, unlock ? nameBuf : "Locked", &dummy, -1, NULL, &playMap};
         }
     }
-    menu[mapsCount - 1] = (MenuItem){BUTTON, "Go back", &dummy, -1, NULL, &ret};
+    menu[mapsCount - (profiles[activeProfile].progression.solmn != READY)] = (MenuItem){BUTTON, "Go back", &dummy, -1, NULL, &ret};
     while (ex < checkEx)
     {
         void (*menuPtr)(int *);
-        menuPtr = printMenu("Fishing C > Main menu > Start game", menu, mapsCount, sel, (Color[]){BLACK, WHITE});
+        menuPtr = printMenu("Fishing C > Main menu > Start game", menu, mapsCount + (profiles[activeProfile].progression.solmn == READY), sel, (Color[]){BLACK, WHITE});
         menuPtr(sel);
     }
 }
