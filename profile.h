@@ -31,6 +31,14 @@ typedef enum
 
 typedef struct
 {
+    char fish[0x20];
+    int bestWeight;
+    int bestLength;
+    int catchCount;
+} LivewellRecord;
+
+typedef struct
+{
     int music;     // play music
     int sfx;       // play sound effects
     int autosave;  // enable automatic saving of profile during gameplay
@@ -76,6 +84,7 @@ typedef struct
     ProfileHeader profileHeader;
     Progression progression;
     Options options;
+    LivewellRecord livewell[32];
     unsigned char spawnTable[0x190];
 } PlayerProfile;
 
@@ -90,5 +99,6 @@ void saveActiveProfile();
 void profileMenu();
 unsigned int crc32(const char *dataPtr, size_t dataSize);
 char *getObString(int idx);
+void updateLivewell(char *fish, char *friendlyname, int weight, int length);
 
 #endif

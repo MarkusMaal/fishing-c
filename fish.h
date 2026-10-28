@@ -1,6 +1,7 @@
 #ifndef FISH_H
 #define FISH_H
 #include "utils.h"
+#include "profile.h"
 
 typedef enum
 {
@@ -51,6 +52,7 @@ typedef struct
     int spawnCount;
     RarityLevel rarity;
     char spawnMaps[0x10];
+    char description[0x160];
 } LivewellData;
 
 typedef enum
@@ -83,6 +85,6 @@ typedef struct
 } FishData;
 
 FishData loadFish(char *fileName);
-int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty);
+int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileName);
 LivewellData loadFishMeta(char *fileName);
 #endif

@@ -30,7 +30,11 @@ LivewellData loadFishMeta(char *fileName)
     FILE *infile;
     infile = fopen(fileName, "rb");
     Record rStruct;
-    LivewellData lwell;
+    LivewellData lwell = (LivewellData){
+        "",
+        0,
+        COMMON,
+        ""};
     int c;
     while ((c = fgetc(infile)) != EOF)
     {
@@ -50,7 +54,7 @@ LivewellData loadFishMeta(char *fileName)
     return lwell;
 }
 
-int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty)
+int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileName)
 {
     int fishX = fish.spawnX;
     int fishY = fish.spawnY;
@@ -267,7 +271,13 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty)
     {
         printf((char *)fish.geometry[3][i], weight, length);
     }
-    printf("\nPress RETURN continue . . . ");
+    printf("\n");
+    LivewellData fishMeta = loadFishMeta(fileName);
+    if (strlen(fishMeta.name) > 0)
+    {
+        updateLivewell(fileName, fishMeta.name, weight * (fish.largeUnits ? 1000 : 1), length);
+    }
+    printf("Press RETURN continue . . . ");
     while (strcmp(readKey(), "return") != 0)
     {
     }

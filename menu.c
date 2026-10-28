@@ -53,6 +53,114 @@ void devLoadMap(int *sel)
     free(backup);
 }
 
+void livewellMenu(int *sel)
+{
+    ex--;
+    int checkEx = ex + 1;
+    last = *sel;
+    *sel = 0;
+    clearScreen();
+    printf("\n ╔");
+    for (int i = 0; i < 46; i++)
+        printf("═");
+    char *ldt = malloc(44);
+    for (int i = 0; i < 44; i++)
+        ldt[i] = 0;
+    strcat(ldt, "Loading livewell...");
+    printf("╗\n ║ %-44s ║\n ╚", ldt);
+    for (int i = 0; i < 46; i++)
+        printf("═");
+    printf("╝\n\n Tip: If the accumulative weight of fish in your livewell\n reaches 200kg, you'll recieve an exclusive reward.\n");
+    free(ldt);
+    stopSound();
+    playSound("snd/livewell.mp3", true);
+    LivewellData *lwd = malloc(sizeof(LivewellData) * 32);
+    FishData *fsh = malloc(sizeof(FishData) * 32);
+    int fishCnt = 0;
+    for (int i = 0; i < 32; i++)
+    {
+        if (profiles[activeProfile].livewell[i].fish[0] == '\0')
+        {
+            fishCnt = i;
+            break;
+        }
+        lwd[i] = loadFishMeta(profiles[activeProfile].livewell[i].fish);
+        fsh[i] = loadFish(profiles[activeProfile].livewell[i].fish);
+    }
+    MenuItem menuItems[fishCnt + 1];
+    for (int i = 0; i < fishCnt; i++)
+    {
+        char *buf = malloc(64);
+        snprintf(buf, 64, "%dx %s (%d %s)", profiles[activeProfile].livewell[i].catchCount,
+                 lwd[i].name,
+                 profiles[activeProfile].livewell[i].bestWeight / (profiles[activeProfile].livewell[i].bestWeight >= 1000 ? 1000 : 1),
+                 profiles[activeProfile].livewell[i].bestWeight >= 1000 ? "kg" : "g");
+        menuItems[i] = (MenuItem){BUTTON, buf, &dummy, -1, NULL, &dummyFunc};
+    }
+    menuItems[fishCnt] = (MenuItem){BUTTON, "Go back", &dummy, -1, NULL, &ret};
+
+    chcolor((Color[]){BLUE, LWHITE});
+    printf("%-99999s", "");
+    locate(0, 0);
+    while (ex < checkEx)
+    {
+        void (*menuPtr)(int *);
+        menuPtr = printMenu("Fishing C > Main menu > Livewell", menuItems, fishCnt + 1, sel, (Color[]){BLACK, WHITE});
+        if (*sel < fishCnt)
+        {
+            clearScreen();
+            for (int i = 0; i < 16; i++)
+            {
+                printf(fsh[*sel].geometry[3][i],
+                       profiles[activeProfile].livewell[*sel].bestWeight / (profiles[activeProfile].livewell[*sel].bestWeight >= 1000 ? 1000 : 1),
+                       profiles[activeProfile].livewell[*sel].bestLength);
+            }
+            printf("\n Found at: ");
+            for (int i = 0; i < lwd[*sel].spawnCount; i++)
+            {
+                printf("%s%s", mapsList[lwd[*sel].spawnMaps[i]].name, i != lwd[*sel].spawnCount - 1 ? ", " : "");
+            }
+            printf("\n Rarity: ");
+            switch (lwd[*sel].rarity)
+            {
+            case COMMON:
+                printf("Common");
+                break;
+            case UNCOMMON:
+                printf("Uncommon");
+                break;
+            case SEMIRARE:
+                printf("Semi-rare");
+                break;
+            case RARE:
+                printf("Rare");
+                break;
+            case LEGENDARY:
+                printf("Legendary");
+                break;
+            case ONE_OF_KIND:
+                printf("One of a kind");
+                break;
+            }
+            printf("\n\n %s\n\nPress any key to continue . . . ",
+                   lwd[*sel].description);
+            readKey();
+        }
+        else
+            menuPtr(sel);
+    }
+    chcolor((Color[]){BLACK, WHITE});
+    printf("%-99999s", "");
+    for (int i = 0; i < fishCnt; i++)
+    {
+        free(menuItems[i].text);
+    }
+    locate(0, 0);
+    free(lwd);
+    unloadMap();
+    playSound("snd/menu_bg.mp3", true);
+}
+
 void actionTester(int *sel)
 {
     clearScreen();
@@ -106,7 +214,7 @@ void testFishBattle()
         return;
     buff[strlen(buff) - 1] = '\0'; // remove newline
     FishData fish = loadFish(buff);
-    int *results = fightFish(fish, 100, (PlayerDifficulty)profiles[activeProfile].options.difficulty);
+    int *results = fightFish(fish, 100, (PlayerDifficulty)profiles[activeProfile].options.difficulty, buff);
     clearScreen();
 
     printf("\nResults:\n\nWeight: %d g\nSize: %d cm\n\nPress any key to continue . . . ", fish.largeUnits ? *results * 1000 : *results, results[1]);
@@ -476,7 +584,7 @@ void rootMenu()
             (MenuItem){BUTTON, "Save game", &dummy, -1, NULL, &saveActiveProfile},
             (MenuItem){BUTTON, "Change profile", &dummy, -1, NULL, &profileMenu},
             (MenuItem){BUTTON, "Settings", &dummy, -1, NULL, &settingsMenu},
-            (MenuItem){DISABLED_BUTTON, "Livewell", &dummy, -1, NULL, &testItemEntry},
+            (MenuItem){BUTTON, "Livewell", &dummy, -1, NULL, &livewellMenu},
             (MenuItem){BUTTON, "Exit", &dummy, -1, NULL, &ret},
             (MenuItem){BUTTON, "Developer", &dummy, -1, NULL, &devMenu},
             (MenuItem){BUTTON, "Dummy menu entry", &dummy, -1, NULL, &testItemEntry},

@@ -52,6 +52,7 @@ Compiling instructions will not be provided until final version is publically av
 - Boss fish fight
 - Scouting map
 - Credits screen
+- Livewell
 
 ## Features to be implemented
 
@@ -60,7 +61,6 @@ Compiling instructions will not be provided until final version is publically av
 - Secret map and creepypasta features
 - Game over screen
 - Arcade and custom game modes
-- Livewell
 - Splash and title screen screens
 - Timeouts/demo mode
 - Scoreboard

@@ -506,7 +506,7 @@ void cast(int *values)
                         stopSound();
                         snprintf(buf, 32, "snd/%s", mapMusic.filename[1]);
                         playSound(buf, true); // why do I hear boss music?
-                        int *result = fightFish(fish, luck, (PlayerDifficulty)profiles[activeProfile].options.difficulty);
+                        int *result = fightFish(fish, luck, (PlayerDifficulty)profiles[activeProfile].options.difficulty, buf);
                         stopSound();
                         if (*result != 0)
                         {
@@ -589,7 +589,7 @@ void cast(int *values)
                     clearScreen();
                 }
                 locate(0, 0);
-                int *result = fightFish(fish, luck, (PlayerDifficulty)profiles[activeProfile].options.difficulty);
+                int *result = fightFish(fish, luck, (PlayerDifficulty)profiles[activeProfile].options.difficulty, buf);
                 if (*result != 0)
                 {
                     if (mapGoal.type == TARGET)

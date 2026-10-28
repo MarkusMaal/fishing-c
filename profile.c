@@ -124,6 +124,7 @@ void initProfile(int idx)
             NORMAL,
             R_RED,
             "Unnamed"},
+        (LivewellRecord){},
         ""};
 }
 
@@ -198,6 +199,35 @@ unsigned int crc32(const char *dataPtr, size_t dataSize)
         i++;
     }
     return crc ^ 0xffffffff;
+}
+
+void updateLivewell(char *fish, char *friendlyname, int weight, int length)
+{
+    int lcount = 0;
+    int first = true;
+    for (int i = 0; i < 32; i++)
+    {
+        if (strcmp(profiles[activeProfile].livewell[i].fish, fish) == 0)
+        {
+            profiles[activeProfile].livewell[i].catchCount++;
+            if (weight * length / 2 > profiles[activeProfile].livewell[i].bestLength * profiles[activeProfile].livewell[i].bestWeight / 2)
+            {
+                profiles[activeProfile].livewell[i].bestLength = length;
+                profiles[activeProfile].livewell[i].bestWeight = weight;
+                printf("This is the biggest %s you've caught so far. Congratulations!\n\n", friendlyname);
+            }
+            first = false;
+        }
+        if (profiles[activeProfile].livewell[i].fish[0] != '\0')
+            lcount++;
+    }
+    if (!first)
+        return;
+    profiles[activeProfile].livewell[lcount].catchCount = 1;
+    profiles[activeProfile].livewell[lcount].bestWeight = weight;
+    profiles[activeProfile].livewell[lcount].bestLength = length;
+    strcpy(profiles[activeProfile].livewell[lcount].fish, fish);
+    printf("This is your first %s, congratulations!\n\n", friendlyname);
 }
 
 char *getObString(int idx)
