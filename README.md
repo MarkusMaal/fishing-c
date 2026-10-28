@@ -50,12 +50,12 @@ Compiling instructions will not be provided until final version is publically av
 - Fish fights
 - Boss fish fight
 - Scouting map
+- Credits screen
 
 ## Features to be implemented
 
 ### Porting
 
-- Credits screen
 - Secret map and creepypasta features
 - Difficulty, rod color and delete profile options
 - Game over screen
