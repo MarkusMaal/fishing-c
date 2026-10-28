@@ -41,6 +41,7 @@ Compiling instructions will not be provided until final version is publically av
 
 - Profile system
 - "Awesome" menu system
+- Difficulty, rod color and delete profile options
 - Maps: Beginner's lake, Experience river, Moon lake, Expert sea
 - Some of the settings (all the toggles and name changing)
 - Saving and autosaving
@@ -57,7 +58,6 @@ Compiling instructions will not be provided until final version is publically av
 ### Porting
 
 - Secret map and creepypasta features
-- Difficulty, rod color and delete profile options
 - Game over screen
 - Arcade and custom game modes
 - Livewell
