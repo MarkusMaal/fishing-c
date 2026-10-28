@@ -62,6 +62,8 @@ void loadMap(char *fileName)
                 printf("Error reading map water\n");
                 readKey();
             }
+            if (mapGoal.type == BOSS && profiles[activeProfile].options.difficulty == EASY)
+                mapGoal.grams = mapGoal.grams / 2;
         }
         else if (strcmp(rStruct.label, "MUSIC") == 0)
         {
@@ -195,7 +197,53 @@ void drawMap(int dx, int dy)
                 ((x == mapBoat.x + 3 || x == mapBoat.x + 4) && (y == mapBoat.y + 1)) ||
                 ((x == mapBoat.x + 4 || x == mapBoat.x + 5 || x == mapBoat.x + 6) && (y == mapBoat.y)))
             {
-                cprintf("█", (Color[]){mapColor.bg, RED, mapColor.bg, mapColor.fg});
+                Color rodColor = RED;
+
+                switch (profiles[activeProfile].options.rodColor)
+                {
+                case R_AQUA:
+                    rodColor = CYAN;
+                    break;
+                case R_BLUE:
+                    rodColor = BLUE;
+                    break;
+                case R_CYAN:
+                    rodColor = LCYAN;
+                    break;
+                case R_GOLD:
+                    rodColor = YELLOW;
+                    break;
+                case R_GRAY:
+                    rodColor = LBLACK;
+                    break;
+                case R_GREEN:
+                    rodColor = GREEN;
+                    break;
+                case R_LIME:
+                    rodColor = LGREEN;
+                    break;
+                case R_LBLUE:
+                    rodColor = LBLUE;
+                    break;
+                case R_LRED:
+                    rodColor = LRED;
+                    break;
+                case R_MAGENTA:
+                    rodColor = LMAGENTA;
+                    break;
+                case R_PURPLE:
+                    rodColor = MAGENTA;
+                    break;
+                case R_WHITE:
+                    rodColor = WHITE;
+                    break;
+                case R_YELLOW:
+                    rodColor = LYELLOW;
+                    break;
+                default:
+                    break;
+                }
+                cprintf("█", (Color[]){mapColor.bg, rodColor, mapColor.bg, mapColor.fg});
             }
             else if (x >= mapBoat.x && x < mapBoat.x + 3 && y > mapBoat.y && y < mapBoat.y + 6)
             {
@@ -262,6 +310,22 @@ void mapLoop(int mapId)
     while (true)
     {
         luck = rand() % 101;
+        switch (profiles[activeProfile].options.difficulty)
+        {
+        case EASY:
+            luck += 10;
+            break;
+        case HARD:
+            luck -= 10;
+            break;
+        case SUPER_HARD:
+            luck -= 20;
+            break;
+        default:
+            break;
+        }
+        if (luck < 0)
+            luck = 0;
         for (int i = 0; i < 999; i++)
         {
             cprintf("   ", (Color[]){mapColor.bg, mapColor.fg, mapColor.bg, mapColor.fg});
@@ -442,7 +506,7 @@ void cast(int *values)
                         stopSound();
                         snprintf(buf, 32, "snd/%s", mapMusic.filename[1]);
                         playSound(buf, true); // why do I hear boss music?
-                        int *result = fightFish(fish, luck);
+                        int *result = fightFish(fish, luck, (PlayerDifficulty)profiles[activeProfile].options.difficulty);
                         stopSound();
                         if (*result != 0)
                         {
@@ -525,7 +589,7 @@ void cast(int *values)
                     clearScreen();
                 }
                 locate(0, 0);
-                int *result = fightFish(fish, luck);
+                int *result = fightFish(fish, luck, (PlayerDifficulty)profiles[activeProfile].options.difficulty);
                 if (*result != 0)
                 {
                     if (mapGoal.type == TARGET)

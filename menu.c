@@ -106,7 +106,7 @@ void testFishBattle()
         return;
     buff[strlen(buff) - 1] = '\0'; // remove newline
     FishData fish = loadFish(buff);
-    int *results = fightFish(fish, 100);
+    int *results = fightFish(fish, 100, (PlayerDifficulty)profiles[activeProfile].options.difficulty);
     clearScreen();
 
     printf("\nResults:\n\nWeight: %d g\nSize: %d cm\n\nPress any key to continue . . . ", fish.largeUnits ? *results * 1000 : *results, results[1]);
@@ -392,7 +392,7 @@ void menuTest(int *sel)
                        NULL},
             (MenuItem){DISABLED_BUTTON, "Disabled menu item", &dummy, -1, NULL, &menuTest},
             (MenuItem){SELECTOR, "Selector", &selValue, 128, NULL, NULL},
-            (MenuItem){CHECKBOX, "Checkbox item", &cbValue, 2, NULL, NULL},
+            (MenuItem){CHECKBOX, "Checkbox item", &cbValue, 2, NULL, &dummyFunc},
             (MenuItem){SLIDER, "Slider", &sliderValue, 10, NULL, NULL},
             (MenuItem){BUTTON, "Go back", &dummy, -1, NULL, &ret},
         };
@@ -598,6 +598,7 @@ void playMap(int *sel)
             break;
     }
     loadMap(buf);
+
     for (int i = 0; i < 999; i++)
     {
         cprintf("   ", (Color[]){mapColor.bg, mapColor.fg, mapColor.bg, mapColor.fg});
@@ -616,15 +617,22 @@ void playMap(int *sel)
             stopSound();
             playSound("snd/win_stage.mp3", false);
         }
-        profiles[activeProfile]
-            .progression.mapUnlocks[mapsList[*sel].idx] = profiles[activeProfile]
-                                                              .progression.mapUnlocks[mapsList[*sel].idx] |
-                                                          1;
         if (!mapsList[selMap].secret)
         {
             clearScreen();
             printf("\nFishing C > You win!\n\nCongratulations!\n\n");
             printf("You have finished the %s!\n\nTotal fish: %.2f kg\nAverage luck: %d%%\n\n", mapTitle.name, (float)profiles[activeProfile].progression.weight / 1000.0f, profiles[activeProfile].progression.totalLuck / profiles[activeProfile].progression.throws);
+            if (!profiles[activeProfile].progression.mapUnlocks[mapsList[*sel].idx] & 0x01)
+            {
+                if (!mapsList[*sel + 1].secret)
+                {
+                    printf("New fishing place unlocked: %s\n\nTo play the new stage, go to start in the main menu and\nselect %s\n\n", mapsList[*sel + 1].name, mapsList[*sel + 1].name);
+                }
+                profiles[activeProfile]
+                    .progression.mapUnlocks[mapsList[*sel].idx] = profiles[activeProfile]
+                                                                      .progression.mapUnlocks[mapsList[*sel].idx] |
+                                                                  1;
+            }
             printf("Press any key to continue . . . ");
             readKey();
         }
@@ -702,6 +710,16 @@ void toggleSetting(int *sel)
     }
 }
 
+void delProfile(int *sel)
+{
+    char buf[32];
+    snprintf(buf, 32, "save/profile%d.dat", activeProfile + 1);
+    remove(buf);
+    ret(sel);
+    profileMenu();
+    ret(sel);
+}
+
 void settingsMenu(int *sel)
 {
     ex--;
@@ -718,7 +736,7 @@ void settingsMenu(int *sel)
             (MenuItem){CHOICE, "Difficulty", (int *)&profiles[activeProfile].options.difficulty, profiles[activeProfile].progression.mapUnlocks[0] & 0x04 ? 4 : 3, profiles[activeProfile].progression.mapUnlocks[0] & 0x04 ? (char *[]){"Easy", "Normal", "Hard", "Super Hard"} : (char *[]){"Easy", "Normal", "Hard"}, &ret},
             (MenuItem){CHOICE, "Rod color", (int *)&profiles[activeProfile].options.rodColor, 14, (char *[]){"Blue", "Green", "Aqua", "Red", "Purple", "Gold", "White", "Gray", "Light blue", "Lime", "Cyan", "Bright red", "Magenta", "Yellow"}, &ret},
             (MenuItem){BUTTON, "Change name", &dummy, -1, NULL, &nameEntry},
-            (MenuItem){BUTTON, "Delete profile", &dummy, -1, NULL, &ret},
+            (MenuItem){BUTTON, "Delete profile", &dummy, -1, NULL, &delProfile},
             (MenuItem){BUTTON, "Go back to main menu", &dummy, -1, NULL, &ret},
         };
         int rodUnlock = profiles[activeProfile].progression.mapUnlocks[0] & 0x02;

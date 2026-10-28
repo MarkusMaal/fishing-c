@@ -74,4 +74,5 @@ void devUnlock();
 void deDev(int *sel);
 void credits();
 void devLoadMap(int *sel);
+void delProfile(int *sel);
 #endif

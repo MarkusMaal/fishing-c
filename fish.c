@@ -50,7 +50,7 @@ LivewellData loadFishMeta(char *fileName)
     return lwell;
 }
 
-int *fightFish(FishData fish, int luck)
+int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty)
 {
     int fishX = fish.spawnX;
     int fishY = fish.spawnY;
@@ -69,6 +69,12 @@ int *fightFish(FishData fish, int luck)
         {
             int roll = rand() % 101;
             roll += (int)((float)luck / 100.0f * 10.0f);
+            if (difficulty == P_SUPER_HARD)
+                roll -= 10;
+            else if (difficulty == P_HARD)
+                roll -= 5;
+            else if (difficulty == P_EASY)
+                roll += 2;
             if (roll > fish.cycleLuck)
             {
                 // printf("CYCLE!");
@@ -84,7 +90,7 @@ int *fightFish(FishData fish, int luck)
         locate(0, 0);
         for (int y = 0; y < fishY; y++)
         {
-            printf("\n");
+            printf("        \n");
         }
         int gI = fish.attackPatternGeometry[i];
         for (int cI = 0; cI < fishX; cI++)
@@ -104,9 +110,25 @@ int *fightFish(FishData fish, int luck)
             }
         }
         char requestedInput = fish.attackPatternInputs[i];
+        int remainder;
+        switch (difficulty)
+        {
+        case P_EASY:
+            remainder = 2;
+            break;
+        case P_NORMAL:
+            remainder = 3;
+            break;
+        case P_HARD:
+            remainder = 7;
+            break;
+        case P_SUPER_HARD:
+            remainder = 8;
+            break;
+        }
         if (fish.attackPatternInputs[i] == 8)
         {
-            requestedInput = rand() % 8;
+            requestedInput = rand() % remainder;
         }
         if (fish.attackPatternInputs[i] == 9)
         {

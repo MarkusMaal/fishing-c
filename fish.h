@@ -53,6 +53,14 @@ typedef struct
     char spawnMaps[0x10];
 } LivewellData;
 
+typedef enum
+{
+    P_EASY,
+    P_NORMAL,
+    P_HARD,
+    P_SUPER_HARD
+} PlayerDifficulty;
+
 typedef struct
 {
     char geometry[4][0x10][0x40];
@@ -75,6 +83,6 @@ typedef struct
 } FishData;
 
 FishData loadFish(char *fileName);
-int *fightFish(FishData fish, int luck);
+int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty);
 LivewellData loadFishMeta(char *fileName);
 #endif
