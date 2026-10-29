@@ -4,5 +4,6 @@
 #include "utils.h"
 
 int main();
+void titleScreen();
 
 #endif

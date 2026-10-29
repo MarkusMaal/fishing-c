@@ -77,14 +77,17 @@ extern MapsDef *mapsList;
 extern int mapsCount;
 extern t_sound *bgm;
 extern pthread_t bgmThread;
+extern pthread_t kbdThread;
 extern volatile int thread_exit;
+extern volatile int kthread_exit; // keyboard thread
 extern int dummy;
 
 /**
  * Reads a key from the user and returns it as a string value
- * @returns Either numeric string or descriptive string depending on the kind of key pressed
+ * @param timeout If 1, doesn't wait for key press, just checks if a key was being pressed.
+ * @returns Either numeric string or descriptive string depending on the kind of key pressed. If no key is pressed, "1" is returned.
  */
-char *readKey();
+char *readKey(int timeout);
 
 /**
  * Prints the string with the specified background and foreground color
@@ -130,6 +133,12 @@ void playSound(char *filename, char loop);
  * @param arg Full path to sound file
  */
 void *loopSound(void *arg);
+
+/**
+ * Internal thread function for waiting for a keypress. Do not call this function from the main thread!
+ * @param arg Timeout in microseconds
+ */
+void *waitKey(void *arg);
 
 /**
  * Stops the looping sound

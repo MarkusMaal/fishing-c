@@ -6,20 +6,33 @@ int mapsCount = 0;
 int dummy = 0;
 t_sound *bgm = NULL;
 pthread_t bgmThread;
+pthread_t kbdThread;
 volatile int thread_exit = 1;
+volatile int kthread_exit = -1;
 
-char *readKey()
+char *readKey(int timeout)
 {
     rand();
     char c;
     struct termios old, t;
     char special;
-
     tcgetattr(STDIN_FILENO, &old);
     t = old;
     cfmakeraw(&t);
     tcsetattr(STDIN_FILENO, TCSANOW, &t);
-    c = getc(stdin);
+    if (timeout != 0)
+    {
+        kthread_exit = 1;
+        pthread_create(&kbdThread, NULL, waitKey, NULL);
+        usleep(1);
+        pthread_cancel(kbdThread);
+        c = kthread_exit;
+        kthread_exit = 0;
+    }
+    else
+    {
+        c = getc(stdin);
+    }
     special = 0;
     if (c == 13)
         special = 1;
@@ -193,7 +206,7 @@ void *printMenu(char *title, MenuItem *items, int max, int *sel, Color *defaultC
             printf("\n");
         }
         char key[10];
-        strcpy(key, readKey());
+        strcpy(key, readKey(false));
         if ((strcmp(key, "return") == 0) && items[lSel].cl == BUTTON)
         {
             playSound("snd/submenu.mp3", 0);
@@ -256,6 +269,13 @@ void initSoundEngine()
     init_ao();
 }
 
+void *waitKey(void *arg)
+{
+    if (arg != NULL)
+        return NULL;
+    kthread_exit = getc(stdin);
+    return NULL;
+}
 void *loopSound(void *arg)
 {
     bgm = play_async(arg, 100.0);

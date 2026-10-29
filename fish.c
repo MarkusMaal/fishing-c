@@ -17,7 +17,7 @@ FishData loadFish(char *fileName)
             if (fread(&fish, rStruct.chunkSize, rStruct.chunkCount, infile) != 1)
             {
                 printf("Error reading fish data\n");
-                readKey();
+                readKey(false);
             }
         }
         fseek(infile, next, SEEK_SET);
@@ -46,7 +46,7 @@ LivewellData loadFishMeta(char *fileName)
             if (fread(&lwell, sizeof(LivewellData), 1, infile) != 1)
             {
                 printf("Error reading fish data\n");
-                readKey();
+                readKey(false);
             }
         }
         fseek(infile, next, SEEK_SET);
@@ -160,13 +160,23 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
             "Hold any key to catch",
             ""};
         if (strcmp(inputLabels[(int)requestedInput], "") != 0)
-            printf("\n\n%s:", inputLabels[(int)requestedInput]);
+            printf("\n\n%s%s:", i % 2 == 0 ? " " : "", inputLabels[(int)requestedInput]);
         if (requestedInput == NONE) // mainly for the "catching fish" animation
         {
             usleep(66667);
             goto skipread;
         }
-        char *rKey = readKey();
+        char *rKey = "1";
+        long start_time = clock();
+        while (true)
+        {
+            rKey = readKey(true);
+            if (strcmp(rKey, "1") != 0)
+                break;
+            if ((clock() - start_time) / CLOCKS_PER_SEC * 1000 > (2000 - (int)profiles[activeProfile].options.difficulty * 500))
+                break;
+            fflush(stdout);
+        }
         switch (requestedInput)
         {
         case ANY:
@@ -243,7 +253,7 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
             clearScreen();
             printf("\n\n    Oh no\n    you lost the fish!\n\n\n");
             printf("Press RETURN to continue . . . ");
-            while (strcmp(readKey(), "return") != 0)
+            while (strcmp(readKey(false), "return") != 0)
             {
             }
             return (int[]){0, 0};
@@ -278,7 +288,7 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
         updateLivewell(fileName, fishMeta.name, weight * (fish.largeUnits ? 1000 : 1), length);
     }
     printf("Press RETURN continue . . . ");
-    while (strcmp(readKey(), "return") != 0)
+    while (strcmp(readKey(false), "return") != 0)
     {
     }
     clearScreen();

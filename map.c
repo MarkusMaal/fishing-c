@@ -35,7 +35,7 @@ void loadMap(char *fileName)
             if (fread(&mapTitle.name, rStruct.chunkSize, rStruct.chunkCount, infile) != 1)
             {
                 printf("Error reading map name\n");
-                readKey();
+                readKey(false);
             }
         }
         else if (strcmp(rStruct.label, "LAYOUT") == 0)
@@ -44,7 +44,7 @@ void loadMap(char *fileName)
             if (fread(&mapLayout.chunks, rStruct.chunkCount * rStruct.chunkSize, 1, infile) != 1)
             {
                 printf("Error reading map geometry\n");
-                readKey();
+                readKey(false);
             }
         }
         else if (strcmp(rStruct.label, "WATER") == 0)
@@ -52,7 +52,7 @@ void loadMap(char *fileName)
             if (fread(&mapWater, sizeof(mapWater), 1, infile) != 1)
             {
                 printf("Error reading map water\n");
-                readKey();
+                readKey(false);
             }
         }
         else if (strcmp(rStruct.label, "GOAL") == 0)
@@ -60,7 +60,7 @@ void loadMap(char *fileName)
             if (fread(&mapGoal, sizeof(mapGoal), 1, infile) != 1)
             {
                 printf("Error reading map water\n");
-                readKey();
+                readKey(false);
             }
             if (mapGoal.type == BOSS && profiles[activeProfile].options.difficulty == EASY)
                 mapGoal.grams = mapGoal.grams / 2;
@@ -71,7 +71,7 @@ void loadMap(char *fileName)
             if (fread(&mapMusic.filename, rStruct.chunkCount * rStruct.chunkSize, 1, infile) != 1)
             {
                 printf("Error reading map music\n");
-                readKey();
+                readKey(false);
             }
         }
         else if (strcmp(rStruct.label, "COLOR") == 0)
@@ -79,7 +79,7 @@ void loadMap(char *fileName)
             if (fread(&mapColor, sizeof(mapColor), 1, infile) != 1)
             {
                 printf("Error reading global colors\n");
-                readKey();
+                readKey(false);
             }
         }
         else if (strcmp(rStruct.label, "FISH") == 0)
@@ -88,7 +88,7 @@ void loadMap(char *fileName)
             if (fread(&mapFish.messages, rStruct.chunkCount * rStruct.chunkSize, 1, infile) != 1)
             {
                 printf("Error reading fish entries\n");
-                readKey();
+                readKey(false);
             }
         }
         else if (strcmp(rStruct.label, "STATUS") == 0)
@@ -97,7 +97,7 @@ void loadMap(char *fileName)
             if (fread(&mapStatus.messages, rStruct.chunkSize * rStruct.chunkCount, 1, infile) != 1)
             {
                 printf("Error reading status messages\n");
-                readKey();
+                readKey(false);
             }
         }
         else if (strcmp(rStruct.label, "BOAT") == 0)
@@ -105,7 +105,7 @@ void loadMap(char *fileName)
             if (fread(&mapBoat, sizeof(Boat), 1, infile) != 1)
             {
                 printf("Error reading boat information\n");
-                readKey();
+                readKey(false);
             }
         }
         else if (strcmp(rStruct.label, "MESSAGE") == 0)
@@ -114,7 +114,7 @@ void loadMap(char *fileName)
             if (fread(&mapMessage.messages, sizeof(mapMessage.messages), 1, infile) != 1)
             {
                 printf("Error reading secondary messages\n");
-                readKey();
+                readKey(false);
             }
         }
         else if (strcmp(rStruct.label, "SPAWN") == 0)
@@ -123,7 +123,7 @@ void loadMap(char *fileName)
             if (fread(&mapSpawn.entries, sizeof(mapSpawn.entries), 1, infile) != 1)
             {
                 printf("Error reading fish spawn table\n");
-                readKey();
+                readKey(false);
                 genSpawn = true;
             }
             genSpawn = false;
@@ -134,7 +134,7 @@ void loadMap(char *fileName)
             if (fread(&mapLuck.entries, sizeof(mapLuck.entries), 1, infile) != 1)
             {
                 printf("Error reading luck table\n");
-                readKey();
+                readKey(false);
             }
         }
         else if (strcmp(rStruct.label, "LORE") == 0)
@@ -143,13 +143,13 @@ void loadMap(char *fileName)
             if (fread(&mapLore.messages, rStruct.chunkSize * rStruct.chunkCount, 1, infile) != 1)
             {
                 printf("Error reading map lore\n");
-                readKey();
+                readKey(false);
             }
         }
         else
         {
             printf("INVALID\n");
-            readKey();
+            readKey(false);
         }
         fseek(infile, next, SEEK_SET);
     }
@@ -447,7 +447,7 @@ void loreDisplay()
     {
         clearScreen();
         printf("%sPress any key to continue . . . ", mapLore.messages[i]);
-        readKey();
+        readKey(false);
     }
 }
 

@@ -170,7 +170,7 @@ void profileMenu()
             printf("Because of that, game cannot use this file\nas an accurate source to get data.\n\n");
             printf("To fix this, the save file must be deleted.\nThis will delete any progress you may have\nachieved.\n\n");
             printf("Would you like to delete this data now? (Y/N) ");
-            char *rkey = readKey();
+            char *rkey = readKey(false);
             while (true)
             {
                 if (strcmp(rkey, "121") == 0 || strcmp(rkey, "121") == 0)
@@ -185,7 +185,7 @@ void profileMenu()
                 {
                     break;
                 }
-                rkey = readKey();
+                rkey = readKey(false);
             }
             continue;
         }

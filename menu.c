@@ -144,7 +144,7 @@ void livewellMenu(int *sel)
             }
             printf("\n\n %s\n\nPress any key to continue . . . ",
                    lwd[*sel].description);
-            readKey();
+            readKey(false);
         }
         else
             menuPtr(sel);
@@ -190,7 +190,7 @@ void keycodeTester()
     printf("\nKeycode reader (press RETURN to exit)\n\nPress any key...");
     while (true)
     {
-        char *keycode = readKey();
+        char *keycode = readKey(1000000);
         if (strcmp(keycode, "return") == 0)
             break;
         clearScreen();
@@ -218,7 +218,7 @@ void testFishBattle()
     clearScreen();
 
     printf("\nResults:\n\nWeight: %d g\nSize: %d cm\n\nPress any key to continue . . . ", fish.largeUnits ? *results * 1000 : *results, results[1]);
-    readKey();
+    readKey(false);
 }
 
 void showGlobalVariables()
@@ -239,7 +239,7 @@ void showGlobalVariables()
     printf("   BGM thread ptr: 0x%lx\n", (long)bgmThread);
 
     printf("\nPress any key to continue . . . ");
-    readKey();
+    readKey(false);
     clearScreen();
     printf("\nFishing C > Main menu > Developer > Variables\n\nGlobal variable listing:\n\n");
     printf("Active profile:\n");
@@ -247,7 +247,7 @@ void showGlobalVariables()
     printf("   Name: %s\n", profiles[activeProfile].options.name);
     printf("   Last save: %s @ %s\n", profiles[activeProfile].profileHeader.saveDate, profiles[activeProfile].profileHeader.saveTime);
     printf("\nPress any key to continue . . . ");
-    readKey();
+    readKey(false);
     printf("\n");
 }
 
@@ -273,7 +273,7 @@ void soundTest()
         playSound(songs[msel], false);
         clearScreen();
         printf("\nFishing C > Main menu > Developer > Sound test\n\nCurrent sound: %s\n\nPress UP and DOWN to toggle sounds, press RETURN to exit\nPress any other key to repeat\n", songs[msel]);
-        char *rkey = readKey();
+        char *rkey = readKey(false);
         if (strcmp(rkey, "up") == 0)
         {
             msel--;
@@ -416,7 +416,7 @@ void credits()
                    getObString(10),
                    getObString(11),
                    getObString(12));
-            readKey();
+            readKey(false);
             printf("\n");
         }
     }
@@ -451,7 +451,7 @@ void musicTest()
         playSound(songs[msel], true);
         clearScreen();
         printf("\nFishing C > Main menu > Developer > Music test\n\nCurrent song: %s\n\nPress UP and DOWN to toggle music, press RETURN to exit\nPress any other key to reset song\n", songs[msel]);
-        char *rkey = readKey();
+        char *rkey = readKey(false);
         if (strcmp(rkey, "up") == 0)
         {
             msel--;
@@ -546,7 +546,7 @@ void testItemEntry(int *sel)
 {
     clearScreen();
     printf("\nYou selected menu item %d\n\nPress any key to continue . . . ", *sel + 1);
-    readKey();
+    readKey(false);
 }
 
 void rootMenu()
@@ -562,7 +562,7 @@ void rootMenu()
             strcpy(playingMap, profiles[activeProfile].progression.mapName);
             clearScreen();
             printf("\nFishing C > Profiles > Resume game\n\nWould you like to resume your game\n\nIt looks like you've left the game\nwhile still fishing on a %s, %s!\n\nWould you like to continue where you left off?\n\n[Y/N] ", profiles[activeProfile].progression.mapName + 1, profiles[activeProfile].options.name);
-            char *rkey = readKey();
+            char *rkey = readKey(false);
             while (true)
             {
                 if (strcmp(rkey, "121") == 0 || strcmp(rkey, "121") == 0)
@@ -576,7 +576,7 @@ void rootMenu()
                     strcpy(profiles[activeProfile].progression.mapName, "menu");
                     break;
                 }
-                rkey = readKey();
+                rkey = readKey(false);
             }
         }
         if (!(profiles[activeProfile].progression.mapUnlocks[0] & 0x02))
@@ -592,7 +592,7 @@ void rootMenu()
                 clearScreen();
                 printf("\nCongratulations!\n\nSince you have over 200kg of fish in\nyour livewell, we've given you an option\nto change the color of your fishing rod.");
                 printf("\n\nTo change the color go to Settings in main\nmenu and find the \"Rod color\" option.\n\nPress any key to continue . . . ");
-                readKey();
+                readKey(false);
                 clearScreen();
             }
         }
@@ -765,7 +765,7 @@ void playMap(int *sel)
                                                                   1;
             }
             printf("Press any key to continue . . . ");
-            readKey();
+            readKey(false);
         }
     }
     unloadMap();
@@ -781,7 +781,7 @@ void playMap(int *sel)
             clearScreen();
             printf("\n\nYou have finished the game!\n\nBoss bass is now finally found and it is\nbeing examined for future projects.\n\n");
             printf("Press any key to continue . . . ");
-            readKey();
+            readKey(false);
             profiles[activeProfile].progression.storiesTold[0] |= 0x02;
         }
         if (profiles[activeProfile].progression.solmn == READY)
@@ -918,7 +918,7 @@ int fishingMenu(char *title, int *defaults, void *fCast, void *fLore, void *fExi
                 printf("\n");
             }
             printf("\nPress any key to continue . . . ");
-            readKey();
+            readKey(false);
             clearScreen();
             continue;
         }
