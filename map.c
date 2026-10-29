@@ -16,10 +16,14 @@ ByteTable mapLuck;
 Lore mapLore;
 int luck;
 
-void loadMap(char *fileName)
+int loadMap(char *fileName)
 {
     FILE *infile;
     infile = fopen(fileName, "rb");
+    if (infile == NULL)
+    {
+        return false;
+    }
     Record rStruct;
     int c;
     int genSpawn = true;
@@ -174,6 +178,7 @@ void loadMap(char *fileName)
             }
         }
     }
+    return true;
 }
 
 void drawMap(int dx, int dy)

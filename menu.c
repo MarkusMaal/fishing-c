@@ -2,7 +2,6 @@
 
 int ex = 0;
 int last = 0;
-int enableDevMenu = 1;
 
 void ret(int *sel)
 {
@@ -84,8 +83,8 @@ void livewellMenu(int *sel)
             fishCnt = i;
             break;
         }
-        lwd[i] = loadFishMeta(profiles[activeProfile].livewell[i].fish);
         fsh[i] = loadFish(profiles[activeProfile].livewell[i].fish);
+        lwd[i] = loadFishMeta(profiles[activeProfile].livewell[i].fish);
     }
     MenuItem menuItems[fishCnt + 1];
     for (int i = 0; i < fishCnt; i++)
@@ -95,17 +94,17 @@ void livewellMenu(int *sel)
                  lwd[i].name,
                  profiles[activeProfile].livewell[i].bestWeight / (profiles[activeProfile].livewell[i].bestWeight >= 1000 ? 1000 : 1),
                  profiles[activeProfile].livewell[i].bestWeight >= 1000 ? "kg" : "g");
-        menuItems[i] = (MenuItem){BUTTON, buf, &dummy, -1, NULL, &dummyFunc};
+        menuItems[i] = (MenuItem){fsh[i].fightLength == 0 ? DISABLED_BUTTON : BUTTON, buf, &dummy, -1, NULL, &dummyFunc};
     }
     menuItems[fishCnt] = (MenuItem){BUTTON, "Go back", &dummy, -1, NULL, &ret};
 
     chcolor((Color[]){BLUE, LWHITE});
     printf("%-99999s", "");
     locate(0, 0);
-    while (ex < checkEx)
+    while (ex < checkEx && fishCnt > 0)
     {
         void (*menuPtr)(int *);
-        menuPtr = printMenu("Fishing C > Main menu > Livewell", menuItems, fishCnt + 1, sel, (Color[]){BLACK, WHITE});
+        menuPtr = printMenu("Fishing C > Main menu > Livewell", menuItems, fishCnt + 1, sel, (Color[]){BLUE, LWHITE});
         if (*sel < fishCnt)
         {
             clearScreen();
@@ -118,7 +117,7 @@ void livewellMenu(int *sel)
             printf("\n Found at: ");
             for (int i = 0; i < lwd[*sel].spawnCount; i++)
             {
-                printf("%s%s", mapsList[(int)lwd[*sel].spawnMaps[i]].name, i != lwd[*sel].spawnCount - 1 ? ", " : "");
+                printf("%s%s", (int)lwd[*sel].spawnMaps[i] < mapsCount ? mapsList[(int)lwd[*sel].spawnMaps[i]].name : "MISSINGMAP", i != lwd[*sel].spawnCount - 1 ? ", " : "");
             }
             printf("\n Rarity: ");
             switch (lwd[*sel].rarity)
@@ -148,6 +147,13 @@ void livewellMenu(int *sel)
         }
         else
             menuPtr(sel);
+    }
+    if (fishCnt == 0)
+    {
+        clearScreen();
+        printf("\nFishing C > Main menu > Livewell\n\nYou haven't caught any fish. Once you catch your\nfirst fish, you can see its stats here.\n\nPress any key to continue . . . ");
+        readKey(false);
+        ret(sel);
     }
     chcolor((Color[]){BLACK, WHITE});
     printf("%-99999s", "");
@@ -190,7 +196,7 @@ void keycodeTester()
     printf("\nKeycode reader (press RETURN to exit)\n\nPress any key...");
     while (true)
     {
-        char *keycode = readKey(1000000);
+        char *keycode = readKey(false);
         if (strcmp(keycode, "return") == 0)
             break;
         clearScreen();
@@ -304,6 +310,8 @@ void credits()
     sleep(1);
     FILE *file = fopen("txt/credits.txt", "r");
     char line[256];
+    for (int i = 0; i < 256; i++)
+        line[i] = '\0';
     if (file != NULL)
     {
         while (fgets(line, sizeof(line), file))
@@ -362,8 +370,8 @@ void credits()
             printf("\n");
             sleep(1);
         }
-        clearScreen();
     }
+    clearScreen();
     FILE *copyFile = fopen("txt/copyright.txt", "r");
     if (copyFile != NULL)
     {
@@ -420,6 +428,7 @@ void credits()
             printf("\n");
         }
     }
+    sleep(2);
     stopSound();
     chcolor((Color[]){BLACK, WHITE});
     if (profiles[activeProfile].progression.solmn != TRUE)
@@ -693,6 +702,13 @@ void nameEntry()
 
 void playMap(int *sel)
 {
+    if (*sel >= mapsCount || *sel < 0)
+    {
+        clearScreen();
+        printf("\nCritical error\n\nMap index is out of range!\n\nPress any key to continue . . . ");
+        readKey(false);
+        return;
+    }
     clearScreen();
     printf("\n ╔");
     for (int i = 0; i < 46; i++)
@@ -722,7 +738,16 @@ void playMap(int *sel)
         if (mc == 0)
             break;
     }
-    loadMap(buf);
+    if (!loadMap(buf))
+    {
+        unloadMap();
+        playSound("snd/menu_bg.mp3", true);
+        clearScreen();
+        playSound("snd/error.mp3", false);
+        printf("\nFatal loading error\n\nCannot access file \"%s\"\n\nReturning to previous menu\n\nPress any key to continue . . . ", buf);
+        readKey(false);
+        return;
+    }
 
     for (int i = 0; i < 999; i++)
     {
@@ -801,6 +826,13 @@ void playMap(int *sel)
 
 void startMenu(int *sel)
 {
+    if (mapsCount == 0)
+    {
+        clearScreen();
+        printf("\nFishing C > Main menu > Start game\n\nFatal error: No maps available!\n\nPress any key to continue . . . ");
+        readKey(false);
+        return;
+    }
     ex--;
     int checkEx = ex + 1;
     last = *sel;

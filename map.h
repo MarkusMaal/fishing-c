@@ -144,10 +144,11 @@ extern int luck;
 /**
  * Loads the map from a specified location to memory
  * @param fileName .map file to load from (must be full path including the file extension)
+ * @returns boolean value, true means the map was loaded successfully, false means it was not
  * @note In order for the game to not crash, the map file must exist and it should have the following sections:
  *       TITLE, LAYOUT, WATER, GOAL, MUSIC, COLOR, FISH, STATUS, BOAT, MESSAGE, SPAWN, LUCK, LORE
  */
-void loadMap(char *fileName);
+int loadMap(char *fileName);
 
 /**
  * Draws the map with the rod tip at the specified location

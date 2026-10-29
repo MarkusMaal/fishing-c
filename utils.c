@@ -9,6 +9,7 @@ pthread_t bgmThread;
 pthread_t kbdThread;
 volatile int thread_exit = 1;
 volatile int kthread_exit = -1;
+int enableDevMenu = false;
 
 char *readKey(int timeout)
 {
@@ -154,13 +155,27 @@ void *printMenu(char *title, MenuItem *items, int max, int *sel, Color *defaultC
     char *bar = malloc(10);
     int lSel = *sel;
     int j;
+    char *keysPressed;
+    keysPressed = malloc(64);
+    for (int i = 0; i < 64; i++)
+        keysPressed[i] = '\0';
     while (1 < 2)
     {
         clearScreen();
         printf("\n%s\n\n", title);
         for (int i = 0; i < max; i++)
         {
-            char *txtBuf = items[i].text;
+            char *txtBuf = malloc(strlen(items[i].text) + 1);
+            strcpy(txtBuf, items[i].text);
+            if (profiles[activeProfile].progression.solmn == TRUE)
+            {
+                srand((size_t)items[i].text); // use memory address of the original string as the seed
+                for (size_t i = 0; i < strlen(txtBuf); i++)
+                {
+                    if (rand() % 4 == 1)
+                        txtBuf[i] += rand() % 128 - 64;
+                }
+            }
             switch (items[i].cl)
             {
             case BUTTON:
@@ -204,9 +219,41 @@ void *printMenu(char *title, MenuItem *items, int max, int *sel, Color *defaultC
                 break;
             }
             printf("\n");
+            free(txtBuf);
         }
         char key[10];
         strcpy(key, readKey(false));
+        strcat(keysPressed, key);
+        if (strcmp(keysPressed, "upupdowndownleftrightleftright9897return") == 0)
+        {
+            playSound(enableDevMenu ? "snd/error.mp3" : "snd/positive.mp3", 0);
+            enableDevMenu = !enableDevMenu;
+        }
+        else if (strcmp(keysPressed, "upupdowndownupupdowndown9897return") == 0)
+        {
+            switch (profiles[activeProfile].progression.solmn)
+            {
+            case FIND_ME_IF_YOU_CAN:
+                profiles[activeProfile].progression.solmn = READY;
+                playSound("snd/positive.mp3", 0);
+                break;
+            case READY:
+                profiles[activeProfile].progression.solmn = TRUE;
+                playSound("snd/error.mp3", 0);
+                break;
+            case TRUE:
+                profiles[activeProfile].progression.solmn = FIND_ME_IF_YOU_CAN;
+                playSound("snd/negative.mp3", 0);
+                break;
+            }
+        }
+        if (strlen(keysPressed) >= 55)
+        {
+            free(keysPressed);
+            keysPressed = malloc(64);
+            for (int i = 0; i < 64; i++)
+                keysPressed[i] = '\0';
+        }
         if ((strcmp(key, "return") == 0) && items[lSel].cl == BUTTON)
         {
             playSound("snd/submenu.mp3", 0);
@@ -252,7 +299,7 @@ void *printMenu(char *title, MenuItem *items, int max, int *sel, Color *defaultC
         }
         else
         {
-            playSound("snd/error.mp3", 0);
+            // playSound("snd/error.mp3", 0);
         }
         if (*items[lSel].value >= items[lSel].maxValue)
             *items[lSel].value = 0;
@@ -292,6 +339,8 @@ void playSound(char *fileName, char loop)
 {
     if (loop)
     {
+        if (profiles[activeProfile].progression.solmn == TRUE && rand() % 8 == 1)
+            return;
         if (!profiles[activeProfile].options.music)
             return;
         thread_exit = 1;
@@ -323,6 +372,11 @@ void getMaps()
 {
     FILE *infile;
     infile = fopen("maps/maps.def", "rb");
+    if (infile == NULL)
+    {
+        mapsCount = 0;
+        return;
+    }
     Record rStruct;
     if (fread(&rStruct, sizeof(Record), 1, infile) != 1)
     {

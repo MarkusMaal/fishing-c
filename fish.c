@@ -4,6 +4,8 @@ FishData loadFish(char *fileName)
 
     FILE *infile;
     infile = fopen(fileName, "rb");
+    if (infile == NULL)
+        return (FishData){};
     Record rStruct;
     FishData fish;
     int c;
@@ -31,10 +33,13 @@ LivewellData loadFishMeta(char *fileName)
     infile = fopen(fileName, "rb");
     Record rStruct;
     LivewellData lwell = (LivewellData){
-        "",
+        "MISSINGNAME",
         0,
         COMMON,
         "", ""};
+    strcpy(lwell.name, fileName);
+    if (infile == NULL)
+        return lwell;
     int c;
     while ((c = fgetc(infile)) != EOF)
     {
@@ -56,6 +61,14 @@ LivewellData loadFishMeta(char *fileName)
 
 int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileName)
 {
+    if (fish.fightLength == 0)
+    {
+        clearScreen();
+        playSound("snd/error.mp3", false);
+        printf("\nFatal error\n\nCannot access file \"%s\"\n\nNo result data will be returned from this catch\n\nPress any key to continue . . . ", fileName);
+        readKey(false);
+        return (int[]){0, 0};
+    }
     int fishX = fish.spawnX;
     int fishY = fish.spawnY;
     int weight = (float)luck / 100.0f * (fish.weightMax - fish.weightMin) + fish.weightMin;
@@ -160,7 +173,7 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
             "Hold any key to catch",
             ""};
         if (strcmp(inputLabels[(int)requestedInput], "") != 0)
-            printf("\n\n%s%s:", i % 2 == 0 ? " " : "", inputLabels[(int)requestedInput]);
+            printf("\n\n%s:", inputLabels[(int)requestedInput]);
         if (requestedInput == NONE) // mainly for the "catching fish" animation
         {
             usleep(66667);

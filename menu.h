@@ -3,7 +3,6 @@
 #include "utils.h"
 #include "map.h"
 #include "profile.h"
-extern int enableDevMenu;
 
 /**
  * Return to previous menu

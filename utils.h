@@ -81,6 +81,7 @@ extern pthread_t kbdThread;
 extern volatile int thread_exit;
 extern volatile int kthread_exit; // keyboard thread
 extern int dummy;
+extern int enableDevMenu;
 
 /**
  * Reads a key from the user and returns it as a string value

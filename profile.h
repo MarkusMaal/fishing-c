@@ -2,6 +2,9 @@
 #define PROFILE_H
 #include "utils.h"
 #include <time.h>
+#include <dirent.h>
+#include <errno.h>
+#include <sys/stat.h>
 
 typedef enum
 {

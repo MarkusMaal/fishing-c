@@ -71,12 +71,47 @@ void saveProfile(PlayerProfile profile, int idx)
     }
     snprintf(profile.profileHeader.saveDate, 32, "%02d.%02d.%04d", t->tm_mday, t->tm_mon + 1, t->tm_year + 1900);
     snprintf(profile.profileHeader.saveTime, 32, "%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec);
+    DIR *dir = opendir("save");
+    if (ENOENT == errno)
+    {
+        mkdir("save", 0777);
+    }
+    else if (!dir)
+    {
+        clearScreen();
+        printf("\nFatal error\n\nUnable to access save directory.\n\nMake sure the \"save\" directory is writable.\n\nData has not been saved\n\nPress any key to continue . . . ");
+        readKey(false);
+        return;
+    }
     char buf[32];
     snprintf(buf, 32, "save/profile%d.dat", idx + 1);
     FILE *outfile;
     outfile = fopen(buf, "wb");
+    if (outfile == NULL)
+    {
+        clearScreen();
+        printf("\nFatal error\n\nSave procedure failed\n\nMake sure the \"save\" directory is writable.\n\nData has not been saved\n\nPress any key to continue . . . ");
+        readKey(false);
+        return;
+    }
     unsigned int checksum = crc32((char *)&profile, sizeof(PlayerProfile));
     fwrite(&checksum, 4, 1, outfile);
+    if ((profile.progression.solmn == TRUE) /*&& rand() % 1000 == 1*/) // 0.01% chance to corrupt the save file when "corrupted mode" is active
+    {
+        for (long unsigned int i = sizeof(ProfileHeader); i < sizeof(PlayerProfile); i++)
+        {
+            ((char *)&profile)[i] = rand() % 256; // write random nonsense to the save data
+        }
+        fwrite(&profile, sizeof(PlayerProfile), 1, outfile);
+        fclose(outfile);
+        playSound("snd/save.mp3", false);
+        // corrupt memory, hopefully causing a crash (yes, we are doing that intentionally for the creepiness effect)
+        // most OSes and modern hardware should catch these issues and crash the program appropriately
+        for (int i = 0; i < 32768; i++)
+        {
+            profile.progression.mapUnlocks[i] = rand() % 256;
+        }
+    }
     fwrite(&profile, sizeof(PlayerProfile), 1, outfile);
     fclose(outfile);
     playSound("snd/save.mp3", false);
@@ -89,7 +124,7 @@ void saveActiveProfile()
     snprintf(profiles[activeProfile].profileHeader.saveDate, 32, "%02d.%02d.%04d", t->tm_mday, t->tm_mon + 1, t->tm_year + 1900);
     snprintf(profiles[activeProfile].profileHeader.saveTime, 32, "%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec);
     clearScreen();
-    printf("\n\nFishing C > Main menu > Save game\n\n");
+    printf("\nFishing C > Main menu > Save game\n\n");
     printf(" Name: %s\n Date: %s\n Time: %s\n\n Do not close the console window as it\n may lead to data corruption\n",
            profiles[activeProfile].options.name,
            profiles[activeProfile].profileHeader.saveDate,
@@ -135,6 +170,13 @@ void initProfile(int idx)
     for (int i = 0; i < 0x190; i++)
     {
         profiles[idx].localSpawnTable[i] = 0;
+    }
+
+    opendir("snd");
+    if (ENOENT == errno)
+    {
+        profiles[idx].options.music = false;
+        profiles[idx].options.sfx = false;
     }
 }
 
@@ -246,6 +288,8 @@ char *getObString(int idx)
     Record r;
     FILE *infile;
     infile = fopen("txt/solmn.dat", "rb");
+    if (infile == NULL)
+        return "";
     fread(&r, sizeof(Record), 1, infile);
     fseek(infile, 0x10 + r.chunkSize * idx, SEEK_SET);
     char source[0x20];
