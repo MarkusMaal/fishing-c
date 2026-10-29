@@ -43,7 +43,8 @@ typedef enum
     /*
      * Catch all the fish specified at least once, no weight or luck requirements
      */
-    TARGET
+    TARGET,
+    SANDBOX
 } GoalType;
 
 typedef struct

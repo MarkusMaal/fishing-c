@@ -2,15 +2,22 @@
 
 int main()
 {
+    char *initStr = "Initializing...";
+    printf(initStr);
     demo = NO_DEMO;
     for (int i = 0; i < 8; i++)
     {
         initProfile(i);
     }
+    getScores();
     getMaps();
     cprintf("", (Color[]){BLACK, BLACK, BLACK, WHITE});
     clearScreen();
     initSoundEngine();
+    locate(0, 0);
+    for (size_t i = 0; i < strlen(initStr); i++)
+        printf(" ");
+    locate(0, 0);
     splashScreen();
     playSound("snd/menu_bg.mp3", 1);
     titleScreen();
@@ -71,6 +78,7 @@ void titleScreen()
     for (int i = 0; i < 999; i++)
         printf("%-99s", "");
     clearScreen();
+    locate(6, 0);
     printf("    \n");
     int padSize = 28;
     char *pad = malloc(padSize + 1);
@@ -114,7 +122,7 @@ void titleScreen()
                 playSound("snd/menu_bg.mp3", true);
                 titleScreen();
                 break;
-            case NO_DEMO:
+            case SCORES:
                 demo = GAMEPLAY;
                 chcolor((Color[]){BLACK, WHITE});
                 demoPlay();
@@ -127,6 +135,14 @@ void titleScreen()
                 playSound("snd/menu_bg.mp3", true);
                 titleScreen();
                 break;
+            case NO_DEMO:
+                demo = SCORES;
+                clearScreen();
+                showScores();
+                sleep(10);
+                clearScreen();
+                titleScreen();
+                return;
             default:
                 break;
             }

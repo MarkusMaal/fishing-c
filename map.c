@@ -178,10 +178,29 @@ int loadMap(char *fileName)
             }
         }
     }
-    if (profiles[activeProfile].progression.mode == DEMO)
+    switch (profiles[activeProfile].progression.mode)
     {
+    case DEMO:
         strcpy(mapStatus.messages[0].msg, "Demo");
         strcpy(mapStatus.messages[1].msg, "Game Over");
+        break;
+    case ARCADE:
+        switch (mapStatus.messages[0].idx)
+        {
+        case 0:
+            strcpy(mapStatus.messages[0].msg, "Total fish: %d kg");
+            break;
+        case 3:
+            strcpy(mapStatus.messages[0].msg, "Total fish: %.2f kg");
+            break;
+        }
+        strcpy(mapStatus.messages[1].msg, "Arcade mode");
+        break;
+    default:
+        break;
+    }
+    if (profiles[activeProfile].progression.mode == DEMO)
+    {
     }
     return true;
 }
@@ -305,7 +324,7 @@ void drawMap(int dx, int dy)
 
 void mapLoop(int mapId)
 {
-    int maxThrows = rand() % 16;
+    int maxThrows = rand() % 16 + 5;
     if (profiles[activeProfile].progression.mode == DEMO)
     {
         maxThrows = 1;
@@ -317,7 +336,7 @@ void mapLoop(int mapId)
         if (mapGoal.type == TARGET)
             memcpy(profiles[activeProfile].progression.targets, mapGoal.targets, 20);
     }
-    else
+    else if (profiles[activeProfile].progression.mode != ARCADE)
     {
         memcpy(mapSpawn.entries, profiles[activeProfile].localSpawnTable, 0x190);
     }
@@ -382,23 +401,30 @@ void mapLoop(int mapId)
         strcat(statusMessage, mapTitle.name);
         strcat(statusMessage, "\n");
         char statusBuff[0x100];
-        switch (mapStatus.messages[0].idx)
+        if (profiles[activeProfile].progression.mode != ARCADE)
         {
-        case 0:
-            snprintf(statusBuff, 0x100, mapStatus.messages[0].msg, profiles[activeProfile].progression.weight / 1000, (int)((float)profiles[activeProfile].progression.weight / (float)profiles[activeProfile].progression.goalWeight * 100.f));
-            break;
-        case 1:
-            snprintf(statusBuff, 0x100, mapStatus.messages[0].msg, profiles[activeProfile].progression.goalWeight / 1000);
-            break;
-        case 3:
-            snprintf(statusBuff, 0x100, mapStatus.messages[0].msg, (float)profiles[activeProfile].progression.weight / 1000.0f, (float)profiles[activeProfile].progression.goalWeight / 1000.0f, (int)((float)profiles[activeProfile].progression.weight / (float)profiles[activeProfile].progression.goalWeight * 100.f));
-            break;
-        case 4:
-            snprintf(statusBuff, 0x100, mapStatus.messages[0].msg, targetsString);
-            break;
-        case 5:
-            snprintf(statusBuff, 0x100, mapStatus.messages[0].msg, MIN(99, (int)((float)profiles[activeProfile].progression.totalLuck / (float)mapGoal.grams * 100.0f)));
-            break;
+            switch (mapStatus.messages[0].idx)
+            {
+            case 0:
+                snprintf(statusBuff, 0x100, mapStatus.messages[0].msg, profiles[activeProfile].progression.weight / 1000, (int)((float)profiles[activeProfile].progression.weight / (float)profiles[activeProfile].progression.goalWeight * 100.f));
+                break;
+            case 1:
+                snprintf(statusBuff, 0x100, mapStatus.messages[0].msg, profiles[activeProfile].progression.goalWeight / 1000);
+                break;
+            case 3:
+                snprintf(statusBuff, 0x100, mapStatus.messages[0].msg, (float)profiles[activeProfile].progression.weight / 1000.0f, (float)profiles[activeProfile].progression.goalWeight / 1000.0f, (int)((float)profiles[activeProfile].progression.weight / (float)profiles[activeProfile].progression.goalWeight * 100.f));
+                break;
+            case 4:
+                snprintf(statusBuff, 0x100, mapStatus.messages[0].msg, targetsString);
+                break;
+            case 5:
+                snprintf(statusBuff, 0x100, mapStatus.messages[0].msg, MIN(99, (int)((float)profiles[activeProfile].progression.totalLuck / (float)mapGoal.grams * 100.0f)));
+                break;
+            }
+        }
+        else
+        {
+            snprintf(statusBuff, 0x100, "Total fish: %.2f kg (%d %s remaining)", (float)profiles[activeProfile].progression.weight / 1000.0f, maxThrows - profiles[activeProfile].progression.throws, (profiles[activeProfile].progression.throws == maxThrows - 1) ? "throw" : "throws");
         }
         strcat(statusMessage, statusBuff);
         strcat(statusMessage, "\n");
@@ -451,6 +477,11 @@ void mapLoop(int mapId)
         int sel = fishingMenu(statusMessage, (int[]){tx, ty}, cast, loreDisplay, exitMap, (Color[]){mapColor.bg, mapColor.fg});
         if (sel == 6)
         {
+            break;
+        }
+        else if (sel == 7)
+        {
+            profiles[activeProfile].progression.playing = -2;
             break;
         }
         if (strcmp(profiles[activeProfile].progression.mapName, "win") == 0)
@@ -624,6 +655,10 @@ void cast(int *values)
                     }
                     mapSpawn.entries[spotId] = strcmp(fishName, "boot") == 0 ? 252 : 254;
                 }
+                else if (profiles[activeProfile].progression.mode == ARCADE)
+                {
+                    profiles[activeProfile].progression.throws += 999;
+                }
                 profiles[activeProfile].progression.weight += *result * (fish.largeUnits ? 1000 : 1);
                 return;
             }
@@ -660,6 +695,34 @@ void unloadMap()
         printf(" ");
     }
     locate(0, 0);
+    usleep(66667);
+    Color *colPtr = (Color[]){BLACK, LRED, BLACK, RED, BLACK, RED, BLACK, RED, BLACK, LRED};
+    // game over screen
+    if (profiles[activeProfile].progression.playing >= 0)
+    {
+        stopSound();
+        for (int i = 0; i < 10; i += 2)
+        {
+            chcolor(&colPtr[i]);
+            locate(0, 0);
+            for (int j = 0; j < 7; j++)
+                printf("\n");
+            printf("                               G A M E   O V E R");
+            if (i == 2)
+            {
+                playSound("snd/error.mp3", false);
+                sleep(1);
+            }
+            else
+            {
+                usleep(66667);
+            }
+        }
+        chcolor((Color[]){BLACK, WHITE});
+        clearScreen();
+        locate(0, 0);
+        usleep(66667);
+    }
 
     printf("\n ╔");
     for (int i = 0; i < 46; i++)
@@ -669,14 +732,16 @@ void unloadMap()
     for (int i = 0; i < 46; i++)
         printf("═");
     printf("╝\n\n Tip: %s\n", "You can play the game again without losing\n progress by creating a new profile.");
-    stopSound();
+    if (profiles[activeProfile].progression.playing < 0)
+        stopSound();
     char *file = "menu\0";
     for (int i = 0; i < (int)strlen(file) + 1; i++)
         profiles[activeProfile].progression.mapName[i] = file[i];
     profiles[activeProfile].progression.totalLuck = 0;
     profiles[activeProfile].progression.throws = 0;
     profiles[activeProfile].progression.goalWeight = 0;
-    profiles[activeProfile].progression.weight = 0;
+    if (profiles[activeProfile].progression.mode != ARCADE)
+        profiles[activeProfile].progression.weight = 0;
     profiles[activeProfile].progression.playing = -1;
     for (int i = 0; i < 20; i++)
     {

@@ -57,14 +57,15 @@ Compiling instructions will not be provided until final version is publically av
 - Cheat Codes
 - Secret map and creepypasta features
 - Timeouts/demo mode
+- Game over screen
+- Scoreboard
+- Arcade mode
 
 ## Features to be implemented
 
 ### Porting
 
-- Game over screen
-- Arcade and custom game modes
-- Scoreboard
+- Custom game mode
 
 ### New features
 

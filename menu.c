@@ -11,7 +11,14 @@ void ret(int *sel)
     if (ex >= 1)
     {
         clearScreen();
-        printf("Sad to see you go!\n");
+        if (profiles[activeProfile].progression.playing == -2)
+        {
+            printf("See you again!\n");
+        }
+        else
+        {
+            printf("Sad to see you go!\n");
+        }
         stopSound();
         sleep(2);
         unloadSoundEngine();
@@ -591,6 +598,11 @@ void rootMenu()
                 rkey = readKey(false);
             }
         }
+        if (profiles[activeProfile].progression.playing == -2)
+        {
+            ret(&sel);
+            break;
+        }
         if (!(profiles[activeProfile].progression.mapUnlocks[0] & 0x02))
         {
             int weightSum = 0;
@@ -651,7 +663,7 @@ char *genTip(char *mapTip)
     case 0:
         return "You have a better chance at catching different fish\n by changing the casting spot.";
     case 1:
-        return "To see your current luck percent, press ESC during\n gameplay.";
+        return "You can find your current luck percent in the fishing\n menu.";
     case 2:
         return "If you don't have a lot of luck you may end up with\n No fish or even get a boot.";
     case 4:
@@ -760,7 +772,11 @@ void playMap(int *sel)
     snprintf(buf, 32, "snd/%s", *mapMusic.filename);
     playSound(buf, 1);
     printf("Loaded map: %s\n", mapTitle.name);
+    if (profiles[activeProfile].progression.mode == ARCADE)
+        mapGoal.type = SANDBOX;
     mapLoop(*sel);
+    if (profiles[activeProfile].progression.mode == ARCADE || profiles[activeProfile].progression.playing == -2)
+        return;
     int selMap = profiles[activeProfile].progression.playing;
     int won = strcmp(profiles[activeProfile].progression.mapName, "win") == 0;
     int coverageC = 0;
@@ -771,6 +787,7 @@ void playMap(int *sel)
     int coveragePerc = coverageC * 100 / 400;
     if (won && profiles[activeProfile].progression.throws > 0) // we check this to avoid floating point exception (it bad)
     {
+        profiles[activeProfile].progression.playing = -1;
         if (!mapsList[selMap].secret)
         {
             stopSound();
@@ -859,6 +876,13 @@ void startMenu(int *sel)
     menu[mapsCount - (profiles[activeProfile].progression.solmn != READY)] = (MenuItem){BUTTON, "Go back", &dummy, -1, NULL, &ret};
     while (ex < checkEx)
     {
+
+        if (profiles[activeProfile].progression.playing == -2)
+        {
+            ret(sel);
+            ret(sel);
+            break;
+        }
         void (*menuPtr)(int *);
         menuPtr = printMenu("Fishing C > Main menu > Start game", menu, mapsCount + (profiles[activeProfile].progression.solmn == READY), sel, (Color[]){BLACK, WHITE});
         menuPtr(sel);
@@ -924,7 +948,7 @@ int fishingMenu(char *title, int *defaults, void *fCast, void *fLore, void *fExi
     int sel = 0;
     while (1 < 2)
     {
-        MenuItem menu[7] =
+        MenuItem menu[8] =
             {
                 (MenuItem){fCast == &dummyFunc ? DISABLED_BUTTON : BUTTON, "Cast", &dummy, -1, NULL, fCast},
                 (MenuItem){SELECTOR, "Distance", defaults, 20, NULL, NULL},
@@ -932,12 +956,21 @@ int fishingMenu(char *title, int *defaults, void *fCast, void *fLore, void *fExi
                 (MenuItem){BUTTON, "Save game", &dummy, -1, NULL, &saveActiveProfile},
                 (MenuItem){fLore == &dummyFunc ? DISABLED_BUTTON : BUTTON, "Lore", &dummy, -1, NULL, fLore},
                 (MenuItem){BUTTON, "Scouting map", &dummy, -1, NULL, &dummyFunc},
+                (MenuItem){BUTTON, "Give up", &dummy, -1, NULL, fExit},
                 (MenuItem){BUTTON, "Exit", &dummy, -1, NULL, fExit},
         };
+        int scoutIdx = 5;
+        int exitIdx = 6;
+        if (profiles[activeProfile].progression.mode == ARCADE)
+        {
+            memcpy(&menu[3], &menu[5], sizeof(MenuItem) * 2);
+            scoutIdx = 3;
+            exitIdx = 4;
+        }
         void (*menuPtr)(int *);
         void (*nargPtr)();
-        menuPtr = printMenu(title, menu, 7, &sel, colors);
-        if (sel == 5)
+        menuPtr = printMenu(title, menu, exitIdx + 1 + (profiles[activeProfile].progression.mode == STORY ? 1 : 0), &sel, colors);
+        if (sel == scoutIdx)
         {
             clearScreen();
             char *labels = "0123456789ABCDEFGHIJ";
@@ -965,8 +998,12 @@ int fishingMenu(char *title, int *defaults, void *fCast, void *fLore, void *fExi
             nargPtr = (void (*)(void))menuPtr;
             nargPtr();
         }
-        if (sel == 0 || sel == 6)
+        if (sel == 0 || sel >= exitIdx)
         {
+            if (sel == exitIdx)
+            {
+                sel = 6;
+            }
             break;
         }
     }

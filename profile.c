@@ -15,7 +15,7 @@ ProfileHeader quickLoadProfile(int idx)
         return (ProfileHeader){
             "Free slot",
             "Start a new game",
-            "And load here later"};
+            "and load here later"};
     }
     fseek(infile, 4, SEEK_SET);
     fread(&header, sizeof(ProfileHeader), 1, infile);
@@ -138,7 +138,7 @@ void initProfile(int idx)
     profiles[idx].profileHeader = (ProfileHeader){
         "Free slot",
         "Start a new game",
-        "And load here later"};
+        "and load here later"};
     profiles[idx].progression = (Progression){
         "menu",
         "",
@@ -192,20 +192,49 @@ void profileMenu()
     char *buf = malloc(0x70 * 4);
     while (1 < 2)
     {
-        MenuItem menu[5];
+        MenuItem menu[6];
         for (int i = 0; i < 4; i++)
         {
-            snprintf(buf + (0x70 * i), 0x70, "%d. %s\n   %s\n   %s\n", i + 1, headers[i].qName, headers[i].saveDate, headers[i].saveTime);
+            snprintf(buf + (0x70 * i), 0x70, "%d. %s\n   %s %s\n", i + 1, headers[i].qName, headers[i].saveDate, headers[i].saveTime);
             menu[i] = (MenuItem){BUTTON, buf + (0x70 * i), &dummy, -1, NULL, &loadProfile};
         }
-        menu[4] = (MenuItem){BUTTON, "5. Exit\n   Please don't go :(\n   It would be sad", &dummy, -1, NULL, &loadProfile};
-        printMenu("Fishing C > Profiles", menu, 5, &sel, (Color[]){BLACK, WHITE});
-        if (sel == 4)
+        menu[4] = (MenuItem){BUTTON, "5. Arcade mode\n   No story, no saving, just fishing...\n", &dummy, -1, NULL, &loadProfile};
+        menu[5] = (MenuItem){BUTTON, "6. Exit\n   Please don't go :(", &dummy, -1, NULL, &loadProfile};
+        printMenu("Fishing C > Profiles", menu, 6, &sel, (Color[]){BLACK, WHITE});
+        if (sel == 5)
         {
             activeProfile = -1;
             break;
         }
         activeProfile = sel;
+        if (sel == 4)
+        {
+            chcolor((Color[]){BLACK, WHITE});
+            locate(0, 0);
+            for (int i = 0; i < 999; i++)
+                printf("%-99s", "");
+            locate(0, 0);
+            int roll = rand() % 3;
+            profiles[activeProfile].progression.mode = ARCADE;
+            profiles[activeProfile].options.storytell = false;
+            profiles[activeProfile].options.autosave = false;
+            profiles[activeProfile].options.difficulty = NORMAL;
+            profiles[activeProfile].options.rodColor = (RColor)(rand() % 7 + 1);
+            profiles[activeProfile].progression.playing = roll;
+            for (int i = 0; i < 16; i++)
+                profiles[activeProfile].progression.mapUnlocks[i] = 0;
+            playMap(&roll);
+            unloadMap();
+            playSound("snd/menu_bg.mp3", true);
+            if (profiles[activeProfile].progression.weight >= 0)
+            {
+                checkScorePush(profiles[activeProfile].progression.weight);
+                printf("\nPress any key to continue . . . ");
+                readKey(false);
+            }
+            profiles[activeProfile].progression.weight = 0;
+            continue;
+        }
         if (loadProfile(activeProfile) != 0)
         {
             clearScreen();
@@ -236,22 +265,6 @@ void profileMenu()
     }
     free(buf);
     free(headers);
-}
-
-unsigned int crc32(const char *dataPtr, size_t dataSize)
-{
-    unsigned int crc = 0xffffffff;
-    for (size_t i = 0; i < dataSize; i++)
-    {
-        char byte = dataPtr[i];
-        crc = crc ^ byte;
-        for (char j = 8; j > 0; --j)
-        {
-            crc = (crc >> 1) ^ (0xEDB88320 & (-(crc & 1)));
-        }
-        i++;
-    }
-    return crc ^ 0xffffffff;
 }
 
 void updateLivewell(char *fish, char *friendlyname, int weight, int length)

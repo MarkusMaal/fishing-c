@@ -433,3 +433,19 @@ char *strrpl(char *str, char *find, char *replace)
         str[i] = firstStr[i];
     return str;
 }
+
+unsigned int crc32(const char *dataPtr, size_t dataSize)
+{
+    unsigned int crc = 0xffffffff;
+    for (size_t i = 0; i < dataSize; i++)
+    {
+        char byte = dataPtr[i];
+        crc = crc ^ byte;
+        for (char j = 8; j > 0; --j)
+        {
+            crc = (crc >> 1) ^ (0xEDB88320 & (-(crc & 1)));
+        }
+        i++;
+    }
+    return crc ^ 0xffffffff;
+}

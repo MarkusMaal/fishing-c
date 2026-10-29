@@ -37,7 +37,8 @@ LivewellData loadFishMeta(char *fileName)
         0,
         COMMON,
         "", ""};
-    strcpy(lwell.name, fileName);
+    if (strcmp(profiles[activeProfile].progression.mapName, "menu"))
+        strcpy(lwell.name, fileName);
     if (infile == NULL)
         return lwell;
     int c;
@@ -307,7 +308,7 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
     }
     printf("\n");
     LivewellData fishMeta = loadFishMeta(fileName);
-    if (strlen(fishMeta.name) > 0)
+    if (strcmp(fishMeta.name, "MISSINGNAME") != 0 && profiles[activeProfile].progression.mode != ARCADE)
     {
         updateLivewell(fileName, fishMeta.name, weight * (fish.largeUnits ? 1000 : 1), length);
     }

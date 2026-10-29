@@ -163,6 +163,7 @@ void locate(int row, int col);
  * @param replace replacement string
  */
 char *strrpl(char *str, char *find, char *replace);
+unsigned int crc32(const char *dataPtr, size_t dataSize);
 
 void chcolor(Color *colors);
 

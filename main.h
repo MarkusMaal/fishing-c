@@ -1,6 +1,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 #include "menu.h"
+#include "score.h"
 #include "utils.h"
 
 typedef enum

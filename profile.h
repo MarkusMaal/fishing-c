@@ -1,6 +1,8 @@
 #ifndef PROFILE_H
 #define PROFILE_H
 #include "utils.h"
+#include "menu.h"
+#include "score.h"
 #include <time.h>
 #include <dirent.h>
 #include <errno.h>
@@ -109,7 +111,6 @@ void saveProfile(PlayerProfile profile, int idx);
 void initProfile(int idx);
 void saveActiveProfile();
 void profileMenu();
-unsigned int crc32(const char *dataPtr, size_t dataSize);
 char *getObString(int idx);
 void updateLivewell(char *fish, char *friendlyname, int weight, int length);
 
