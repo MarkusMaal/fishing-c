@@ -53,18 +53,18 @@ Compiling instructions will not be provided until final version is publically av
 - Scouting map
 - Credits screen
 - Livewell
+- Splash and title screen screens
+- Cheat Codes
+- Secret map and creepypasta features
+- Timeouts/demo mode
 
 ## Features to be implemented
 
 ### Porting
 
-- Secret map and creepypasta features
 - Game over screen
 - Arcade and custom game modes
-- Splash and title screen screens
-- Timeouts/demo mode
 - Scoreboard
-- Cheat codes
 
 ### New features
 

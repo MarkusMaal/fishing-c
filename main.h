@@ -14,6 +14,7 @@ typedef enum
 int main();
 void titleScreen();
 void splashScreen();
+void demoPlay();
 
 DemoState demo;
 

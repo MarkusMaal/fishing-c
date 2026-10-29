@@ -5,6 +5,7 @@ int last = 0;
 
 void ret(int *sel)
 {
+    profiles[activeProfile].progression.mode = STORY;
     ex++;
     *sel = last;
     if (ex >= 1)
@@ -32,6 +33,8 @@ void devUnlock()
 void devLoadMap(int *sel)
 {
     *sel = 0;
+    if (mapsCount == 0)
+        return;
     char buff[8];
     clearScreen();
     printf("\nPlease provide name of map file without path/extension: ");
@@ -206,7 +209,7 @@ void keycodeTester()
 
 void testFishingMenu(int *sel)
 {
-    fishingMenu("Fishing C > Main menu > Developer > Action test > Fishing menu", (int[]){*sel, dummy}, testItemEntry, dummyFunc, dummyFunc, (Color[]){BLACK, WHITE});
+    fishingMenu("Fishing C > Main menu > Developer > Action test > Fishing menu", (int[]){*sel, dummy}, dummyFunc, dummyFunc, dummyFunc, (Color[]){BLACK, WHITE});
 }
 
 void testFishBattle()
@@ -576,7 +579,7 @@ void rootMenu()
             {
                 if (strcmp(rkey, "121") == 0 || strcmp(rkey, "121") == 0)
                 {
-                    playMap(&profiles[activeProfile].progression.playing);
+                    playMap((int *)&profiles[activeProfile].progression.playing);
                     break;
                 }
                 else if (strcmp(rkey, "110") == 0 || strcmp(rkey, "78") == 0)
@@ -838,6 +841,7 @@ void startMenu(int *sel)
     last = *sel;
     *sel = 0;
     MenuItem menu[mapsCount + (profiles[activeProfile].progression.solmn == READY)];
+    profiles[activeProfile].progression.mode = STORY;
     for (int i = 0; i < mapsCount; i++)
     {
         char unlock = true;
@@ -922,11 +926,11 @@ int fishingMenu(char *title, int *defaults, void *fCast, void *fLore, void *fExi
     {
         MenuItem menu[7] =
             {
-                (MenuItem){BUTTON, "Cast", &dummy, -1, NULL, fCast},
+                (MenuItem){fCast == &dummyFunc ? DISABLED_BUTTON : BUTTON, "Cast", &dummy, -1, NULL, fCast},
                 (MenuItem){SELECTOR, "Distance", defaults, 20, NULL, NULL},
                 (MenuItem){SELECTOR, "Angle", &defaults[1], 20, NULL, NULL},
                 (MenuItem){BUTTON, "Save game", &dummy, -1, NULL, &saveActiveProfile},
-                (MenuItem){BUTTON, "Lore", &dummy, -1, NULL, fLore},
+                (MenuItem){fLore == &dummyFunc ? DISABLED_BUTTON : BUTTON, "Lore", &dummy, -1, NULL, fLore},
                 (MenuItem){BUTTON, "Scouting map", &dummy, -1, NULL, &dummyFunc},
                 (MenuItem){BUTTON, "Exit", &dummy, -1, NULL, fExit},
         };

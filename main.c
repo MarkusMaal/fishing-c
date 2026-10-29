@@ -99,11 +99,25 @@ void titleScreen()
             break;
         if ((clock() - start_time) / CLOCKS_PER_SEC * 1000 > 30000)
         {
+            start_time = clock();
             switch (demo)
             {
-            case NO_DEMO:
-                demo = SPLASH;
+            case GAMEPLAY:
+                demo = NO_DEMO;
                 chcolor((Color[]){BLACK, WHITE});
+                locate(0, 0);
+                for (int i = 0; i < 999; i++)
+                    printf("%-99s", "");
+                locate(0, 0);
+                stopSound();
+                splashScreen();
+                playSound("snd/menu_bg.mp3", true);
+                titleScreen();
+                break;
+            case NO_DEMO:
+                demo = GAMEPLAY;
+                chcolor((Color[]){BLACK, WHITE});
+                demoPlay();
                 locate(0, 0);
                 for (int i = 0; i < 999; i++)
                     printf("%-99s", "");
@@ -129,4 +143,22 @@ void titleScreen()
         printf("%-99s", "");
     locate(0, 0);
     demo = NO_DEMO;
+}
+
+void demoPlay()
+{
+    chcolor((Color[]){BLACK, WHITE});
+    locate(0, 0);
+    for (int i = 0; i < 999; i++)
+        printf("%-99s", "");
+    locate(0, 0);
+    int backup = activeProfile;
+    activeProfile = 5;
+    profiles[activeProfile].progression.mode = DEMO;
+    int mapId = mapsCount > 1 ? rand() % 2 : 0;
+    profiles[activeProfile].options.autosave = false;
+    profiles[activeProfile].options.storytell = false;
+    profiles[activeProfile].options.difficulty = EASY;
+    playMap(&mapId);
+    activeProfile = backup;
 }

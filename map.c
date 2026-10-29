@@ -178,6 +178,11 @@ int loadMap(char *fileName)
             }
         }
     }
+    if (profiles[activeProfile].progression.mode == DEMO)
+    {
+        strcpy(mapStatus.messages[0].msg, "Demo");
+        strcpy(mapStatus.messages[1].msg, "Game Over");
+    }
     return true;
 }
 
@@ -300,6 +305,11 @@ void drawMap(int dx, int dy)
 
 void mapLoop(int mapId)
 {
+    int maxThrows = rand() % 16;
+    if (profiles[activeProfile].progression.mode == DEMO)
+    {
+        maxThrows = 1;
+    }
     if (profiles[activeProfile].progression.playing == -1)
     {
         profiles[activeProfile].progression.playing = mapId;
@@ -314,6 +324,8 @@ void mapLoop(int mapId)
     LivewellData fish;
     while (true)
     {
+        if ((int)profiles[activeProfile].progression.mode % 2 == 1 && profiles[activeProfile].progression.throws > maxThrows)
+            break;
         luck = rand() % 101;
         switch (profiles[activeProfile].options.difficulty)
         {
@@ -431,6 +443,11 @@ void mapLoop(int mapId)
         }
         if (strcmp(profiles[activeProfile].progression.mapName, "win") == 0)
             break;
+        if (profiles[activeProfile].progression.mode == DEMO)
+        {
+            cast((int[]){tx, ty});
+            continue;
+        }
         int sel = fishingMenu(statusMessage, (int[]){tx, ty}, cast, loreDisplay, exitMap, (Color[]){mapColor.bg, mapColor.fg});
         if (sel == 6)
         {

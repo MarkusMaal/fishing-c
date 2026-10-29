@@ -148,6 +148,7 @@ void initProfile(int idx)
         0,
         0,
         0,
+        0,
         "",
         FIND_ME_IF_YOU_CAN};
     profiles[idx].options = (Options){

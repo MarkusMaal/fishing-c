@@ -181,14 +181,23 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
         }
         char *rKey = "1";
         long start_time = clock();
-        while (true)
+        if (profiles[activeProfile].progression.mode == DEMO)
+            sleep(1);
+        if (profiles[activeProfile].progression.mode != DEMO)
         {
-            rKey = readKey(true);
-            if (strcmp(rKey, "1") != 0)
-                break;
-            if ((clock() - start_time) / CLOCKS_PER_SEC * 1000 > (2000 - (int)profiles[activeProfile].options.difficulty * 500))
-                break;
-            fflush(stdout);
+            while (true)
+            {
+                rKey = readKey(true);
+                if (strcmp(rKey, "1") != 0)
+                    break;
+                if ((clock() - start_time) / CLOCKS_PER_SEC * 1000 > (2000 - (int)profiles[activeProfile].options.difficulty * 500))
+                    break;
+                fflush(stdout);
+            }
+        }
+        else if (rand() % 4 == 1)
+        {
+            goto skipread;
         }
         switch (requestedInput)
         {
@@ -266,9 +275,11 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
             clearScreen();
             printf("\n\n    Oh no\n    you lost the fish!\n\n\n");
             printf("Press RETURN to continue . . . ");
-            while (strcmp(readKey(false), "return") != 0)
+            while (profiles[activeProfile].progression.mode != DEMO && strcmp(readKey(false), "return") != 0)
             {
             }
+            if (profiles[activeProfile].progression.mode == DEMO)
+                sleep(1);
             return (int[]){0, 0};
         }
         if ((char)fish.attackPatternSteps[i] > -1)
@@ -301,9 +312,11 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
         updateLivewell(fileName, fishMeta.name, weight * (fish.largeUnits ? 1000 : 1), length);
     }
     printf("Press RETURN continue . . . ");
-    while (strcmp(readKey(false), "return") != 0)
+    while (profiles[activeProfile].progression.mode != DEMO && strcmp(readKey(false), "return") != 0)
     {
     }
+    if (profiles[activeProfile].progression.mode == DEMO)
+        sleep(1);
     clearScreen();
     return (int[]){weight, length};
 }

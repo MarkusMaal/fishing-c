@@ -61,12 +61,21 @@ typedef enum
     TRUE
 } Salmon;
 
+typedef enum : short
+{
+    STORY,
+    ARCADE,
+    CUSTOM,
+    DEMO
+} GameMode;
+
 typedef struct
 {
     char mapName[0x8];
     char mapUnlocks[0x10];
     char storiesTold[0x10]; // love this name lol
-    int playing;
+    short playing;
+    GameMode mode;
     int weight;
     int goalWeight;
     int totalLuck;
