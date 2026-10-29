@@ -34,7 +34,7 @@ LivewellData loadFishMeta(char *fileName)
         "",
         0,
         COMMON,
-        ""};
+        "", ""};
     int c;
     while ((c = fgetc(infile)) != EOF)
     {

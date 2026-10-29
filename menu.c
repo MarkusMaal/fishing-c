@@ -118,7 +118,7 @@ void livewellMenu(int *sel)
             printf("\n Found at: ");
             for (int i = 0; i < lwd[*sel].spawnCount; i++)
             {
-                printf("%s%s", mapsList[lwd[*sel].spawnMaps[i]].name, i != lwd[*sel].spawnCount - 1 ? ", " : "");
+                printf("%s%s", mapsList[(int)lwd[*sel].spawnMaps[i]].name, i != lwd[*sel].spawnCount - 1 ? ", " : "");
             }
             printf("\n Rarity: ");
             switch (lwd[*sel].rarity)
@@ -738,7 +738,7 @@ void playMap(int *sel)
     int coverageC = 0;
     for (int i = 0; i < 400; i++)
     {
-        coverageC += ((unsigned char)profiles[activeProfile].spawnTable[i] > mapFish.header.chunkCount && (unsigned char)profiles[activeProfile].spawnTable[i] != 255) ? 1 : 0;
+        coverageC += ((unsigned char)profiles[activeProfile].localSpawnTable[i] > mapFish.header.chunkCount && (unsigned char)profiles[activeProfile].localSpawnTable[i] != 255) ? 1 : 0;
     }
     int coveragePerc = coverageC * 100 / 400;
     if (won && profiles[activeProfile].progression.throws > 0) // we check this to avoid floating point exception (it bad)

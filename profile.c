@@ -100,32 +100,42 @@ void saveActiveProfile()
 
 void initProfile(int idx)
 {
-    profiles[idx] = (PlayerProfile){
-        (ProfileHeader){
-            "Free slot",
-            "Start a new game",
-            "And load here later"},
-        (Progression){
-            "menu",
-            "",
-            "",
-            -1,
-            0,
-            0,
-            0,
-            0,
-            "",
-            FIND_ME_IF_YOU_CAN},
-        (Options){
-            true,
-            true,
-            true,
-            true,
-            NORMAL,
-            R_RED,
-            "Unnamed"},
-        (LivewellRecord){},
-        ""};
+    profiles[idx].profileHeader = (ProfileHeader){
+        "Free slot",
+        "Start a new game",
+        "And load here later"};
+    profiles[idx].progression = (Progression){
+        "menu",
+        "",
+        "",
+        -1,
+        0,
+        0,
+        0,
+        0,
+        "",
+        FIND_ME_IF_YOU_CAN};
+    profiles[idx].options = (Options){
+        true,
+        true,
+        true,
+        true,
+        NORMAL,
+        R_RED,
+        "Unnamed"};
+    for (int i = 0; i < 32; i++)
+    {
+        profiles[idx].livewell[i] =
+            (LivewellRecord){
+                "",
+                0,
+                0,
+                0};
+    }
+    for (int i = 0; i < 0x190; i++)
+    {
+        profiles[idx].localSpawnTable[i] = 0;
+    }
 }
 
 void profileMenu()

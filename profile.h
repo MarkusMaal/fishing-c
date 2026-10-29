@@ -85,7 +85,7 @@ typedef struct
     Progression progression;
     Options options;
     LivewellRecord livewell[32];
-    unsigned char spawnTable[0x190];
+    unsigned char localSpawnTable[0x190];
 } PlayerProfile;
 
 extern PlayerProfile profiles[8];

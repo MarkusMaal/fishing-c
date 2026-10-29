@@ -304,7 +304,7 @@ void mapLoop(int mapId)
     }
     else
     {
-        memcpy(mapSpawn.entries, profiles[activeProfile].spawnTable, 0x190);
+        memcpy(mapSpawn.entries, profiles[activeProfile].localSpawnTable, 0x190);
     }
     LivewellData fish;
     while (true)
@@ -390,7 +390,7 @@ void mapLoop(int mapId)
         locate(0, 0);
         printf("%-15s", "");
         locate(0, 0);
-        memcpy(profiles[activeProfile].spawnTable, mapSpawn.entries, 0x190);
+        memcpy(profiles[activeProfile].localSpawnTable, mapSpawn.entries, 0x190);
         if (profiles[activeProfile].options.autosave)
         {
             saveProfile(profiles[activeProfile], activeProfile);
