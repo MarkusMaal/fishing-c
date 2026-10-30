@@ -10,7 +10,11 @@ void ret(int *sel)
     *sel = last;
     if (ex >= 1)
     {
-        clearScreen();
+        chcolor((Color[]){BLACK, WHITE});
+        locate(0, 0);
+        for (int i = 0; i < 999; i++)
+            printf("            ");
+        locate(0, 0);
         if (profiles[activeProfile].progression.playing == -2)
         {
             printf("See you again!\n");
@@ -1202,7 +1206,8 @@ int fishingMenu(char *title, int *defaults, void *fCast, void *fLore, void *fExi
         if (sel != 0)
         {
             nargPtr = (void (*)(void))menuPtr;
-            nargPtr();
+            if (sel != exitIdx + 1)
+                nargPtr();
         }
         if (sel == 0 || sel >= exitIdx)
         {
