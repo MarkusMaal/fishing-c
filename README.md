@@ -60,12 +60,13 @@ Compiling instructions will not be provided until final version is publically av
 - Game over screen
 - Scoreboard
 - Arcade mode
+- Custom game mode
 
 ## Features to be implemented
 
 ### Porting
 
-- Custom game mode
+All features from the previous version have been ported!
 
 ### New features
 

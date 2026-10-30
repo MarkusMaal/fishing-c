@@ -39,7 +39,7 @@ int loadMap(char *fileName)
             if (fread(&mapTitle.name, rStruct.chunkSize, rStruct.chunkCount, infile) != 1)
             {
                 printf("Error reading map name\n");
-                readKey(false);
+                // readKey(false);
             }
         }
         else if (strcmp(rStruct.label, "LAYOUT") == 0)
@@ -48,7 +48,7 @@ int loadMap(char *fileName)
             if (fread(&mapLayout.chunks, rStruct.chunkCount * rStruct.chunkSize, 1, infile) != 1)
             {
                 printf("Error reading map geometry\n");
-                readKey(false);
+                // readKey(false);
             }
         }
         else if (strcmp(rStruct.label, "WATER") == 0)
@@ -56,7 +56,7 @@ int loadMap(char *fileName)
             if (fread(&mapWater, sizeof(mapWater), 1, infile) != 1)
             {
                 printf("Error reading map water\n");
-                readKey(false);
+                // readKey(false);
             }
         }
         else if (strcmp(rStruct.label, "GOAL") == 0)
@@ -64,7 +64,7 @@ int loadMap(char *fileName)
             if (fread(&mapGoal, sizeof(mapGoal), 1, infile) != 1)
             {
                 printf("Error reading map water\n");
-                readKey(false);
+                // readKey(false);
             }
             if (mapGoal.type == BOSS && profiles[activeProfile].options.difficulty == EASY)
                 mapGoal.grams = mapGoal.grams / 2;
@@ -75,7 +75,7 @@ int loadMap(char *fileName)
             if (fread(&mapMusic.filename, rStruct.chunkCount * rStruct.chunkSize, 1, infile) != 1)
             {
                 printf("Error reading map music\n");
-                readKey(false);
+                // readKey(false);
             }
         }
         else if (strcmp(rStruct.label, "COLOR") == 0)
@@ -83,7 +83,7 @@ int loadMap(char *fileName)
             if (fread(&mapColor, sizeof(mapColor), 1, infile) != 1)
             {
                 printf("Error reading global colors\n");
-                readKey(false);
+                // readKey(false);
             }
         }
         else if (strcmp(rStruct.label, "FISH") == 0)
@@ -92,7 +92,7 @@ int loadMap(char *fileName)
             if (fread(&mapFish.messages, rStruct.chunkCount * rStruct.chunkSize, 1, infile) != 1)
             {
                 printf("Error reading fish entries\n");
-                readKey(false);
+                // readKey(false);
             }
         }
         else if (strcmp(rStruct.label, "STATUS") == 0)
@@ -101,7 +101,7 @@ int loadMap(char *fileName)
             if (fread(&mapStatus.messages, rStruct.chunkSize * rStruct.chunkCount, 1, infile) != 1)
             {
                 printf("Error reading status messages\n");
-                readKey(false);
+                // readKey(false);
             }
         }
         else if (strcmp(rStruct.label, "BOAT") == 0)
@@ -109,7 +109,7 @@ int loadMap(char *fileName)
             if (fread(&mapBoat, sizeof(Boat), 1, infile) != 1)
             {
                 printf("Error reading boat information\n");
-                readKey(false);
+                // readKey(false);
             }
         }
         else if (strcmp(rStruct.label, "MESSAGE") == 0)
@@ -118,7 +118,7 @@ int loadMap(char *fileName)
             if (fread(&mapMessage.messages, sizeof(mapMessage.messages), 1, infile) != 1)
             {
                 printf("Error reading secondary messages\n");
-                readKey(false);
+                // readKey(false);
             }
         }
         else if (strcmp(rStruct.label, "SPAWN") == 0)
@@ -127,7 +127,7 @@ int loadMap(char *fileName)
             if (fread(&mapSpawn.entries, sizeof(mapSpawn.entries), 1, infile) != 1)
             {
                 printf("Error reading fish spawn table\n");
-                readKey(false);
+                // readKey(false);
                 genSpawn = true;
             }
             genSpawn = false;
@@ -138,7 +138,7 @@ int loadMap(char *fileName)
             if (fread(&mapLuck.entries, sizeof(mapLuck.entries), 1, infile) != 1)
             {
                 printf("Error reading luck table\n");
-                readKey(false);
+                // readKey(false);
             }
         }
         else if (strcmp(rStruct.label, "LORE") == 0)
@@ -147,13 +147,13 @@ int loadMap(char *fileName)
             if (fread(&mapLore.messages, rStruct.chunkSize * rStruct.chunkCount, 1, infile) != 1)
             {
                 printf("Error reading map lore\n");
-                readKey(false);
+                // readKey(false);
             }
         }
         else
         {
             printf("INVALID\n");
-            readKey(false);
+            // readKey(false);
         }
         fseek(infile, next, SEEK_SET);
     }
@@ -208,7 +208,7 @@ int loadMap(char *fileName)
 void drawMap(int dx, int dy)
 {
     clearScreen();
-    locate(mapStatus.messages[0].idx == 3 ? 2 : 0, 0);
+    locate((mapStatus.messages[0].idx == 3 && (profiles[activeProfile].progression.mode != CUSTOM)) ? 2 : 0, 0);
     int drawnChars = 0;
     int bait_y = (float)dy / 20.0f * (float)(mapWater.h - 2.0f);
     int bait_x = (float)dx / 20.0f * ((float)(mapWater.w - 12.0f));
@@ -324,11 +324,7 @@ void drawMap(int dx, int dy)
 
 void mapLoop(int mapId)
 {
-    int maxThrows = rand() % 16 + 5;
-    if (profiles[activeProfile].progression.mode == DEMO)
-    {
-        maxThrows = 1;
-    }
+    int maxThrows = profiles[activeProfile].maxThrows;
     if (profiles[activeProfile].progression.playing == -1)
     {
         profiles[activeProfile].progression.playing = mapId;
@@ -336,14 +332,14 @@ void mapLoop(int mapId)
         if (mapGoal.type == TARGET)
             memcpy(profiles[activeProfile].progression.targets, mapGoal.targets, 20);
     }
-    else if (profiles[activeProfile].progression.mode != ARCADE)
+    else if (profiles[activeProfile].progression.mode == STORY)
     {
         memcpy(mapSpawn.entries, profiles[activeProfile].localSpawnTable, 0x190);
     }
     LivewellData fish;
     while (true)
     {
-        if ((int)profiles[activeProfile].progression.mode % 2 == 1 && profiles[activeProfile].progression.throws > maxThrows)
+        if (((int)profiles[activeProfile].progression.mode % 2 == 1 || profiles[activeProfile].maxThrows > 0) && profiles[activeProfile].progression.throws > maxThrows)
             break;
         luck = rand() % 101;
         switch (profiles[activeProfile].options.difficulty)
@@ -420,6 +416,9 @@ void mapLoop(int mapId)
             case 5:
                 snprintf(statusBuff, 0x100, mapStatus.messages[0].msg, MIN(99, (int)((float)profiles[activeProfile].progression.totalLuck / (float)mapGoal.grams * 100.0f)));
                 break;
+            case 6:
+                snprintf(statusBuff, 0x100, mapStatus.messages[0].msg, (float)profiles[activeProfile].progression.weight / 1000.0f, maxThrows - profiles[activeProfile].progression.throws);
+                break;
             }
         }
         else
@@ -434,11 +433,11 @@ void mapLoop(int mapId)
         printf("%-15s", "");
         locate(0, 0);
         memcpy(profiles[activeProfile].localSpawnTable, mapSpawn.entries, 0x190);
-        if (profiles[activeProfile].options.autosave)
+        if (profiles[activeProfile].options.autosave && profiles[activeProfile].progression.mode != CUSTOM)
         {
             saveProfile(profiles[activeProfile], activeProfile);
         }
-        if (profiles[activeProfile].options.storytell && !profiles[activeProfile].progression.storiesTold[mapId] & 0x01)
+        if (profiles[activeProfile].options.storytell && (profiles[activeProfile].progression.mode != CUSTOM) && !profiles[activeProfile].progression.storiesTold[mapId] & 0x01)
         {
             loreDisplay();
             profiles[activeProfile].progression.storiesTold[mapId] |= 0x01;
@@ -474,7 +473,7 @@ void mapLoop(int mapId)
             cast((int[]){tx, ty});
             continue;
         }
-        int sel = fishingMenu(statusMessage, (int[]){tx, ty}, cast, loreDisplay, exitMap, (Color[]){mapColor.bg, mapColor.fg});
+        int sel = fishingMenu(statusMessage, (int[]){tx, ty}, cast, profiles[activeProfile].progression.mode != CUSTOM ? loreDisplay : dummyFunc, exitMap, (Color[]){mapColor.bg, mapColor.fg});
         if (sel == 6)
         {
             break;
@@ -655,7 +654,7 @@ void cast(int *values)
                     }
                     mapSpawn.entries[spotId] = strcmp(fishName, "boot") == 0 ? 252 : 254;
                 }
-                else if (profiles[activeProfile].progression.mode == ARCADE)
+                else if (profiles[activeProfile].progression.mode == ARCADE || (profiles[activeProfile].maxThrows > 0))
                 {
                     profiles[activeProfile].progression.throws += 999;
                 }

@@ -189,7 +189,7 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
             while (true)
             {
                 rKey = readKey(true);
-                if (strcmp(rKey, "1") != 0)
+                if (strcmp(rKey, "1") != 0 && strcmp(rKey, "-1") != 0)
                     break;
                 if ((clock() - start_time) / CLOCKS_PER_SEC * 1000 > (2000 - (int)profiles[activeProfile].options.difficulty * 500))
                     break;

@@ -357,10 +357,10 @@ void playSound(char *fileName, char loop)
 void stopSound()
 {
     thread_exit = 0;
-    if (profiles[activeProfile].options.music)
-    {
-        running_sounds(STOP, bgm);
-    }
+    /*if (profiles[activeProfile].options.music)
+    {*/
+    running_sounds(STOP, bgm);
+    //}
 }
 
 void unloadSoundEngine()

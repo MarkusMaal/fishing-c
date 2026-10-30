@@ -35,6 +35,16 @@ void devUnlock()
     {
         profiles[activeProfile].progression.mapUnlocks[i] |= 0x01;
     }
+    profiles[activeProfile].progression.mapUnlocks[0] = 0x0F;
+}
+
+void devClearLivewell()
+{
+    for (int i = 0; i < 32; i++)
+    {
+        for (size_t j = 0; j < sizeof(LivewellRecord); j++)
+            ((char *)&(profiles[activeProfile].livewell[i]))[j] = '\0';
+    }
 }
 
 void devLoadMap(int *sel)
@@ -192,10 +202,11 @@ void actionTester(int *sel)
             (MenuItem){BUTTON, "100% unlock", &dummy, -1, NULL, &devUnlock},
             (MenuItem){BUTTON, "Credits", &dummy, -1, NULL, &credits},
             (MenuItem){BUTTON, "Load a map", &dummy, -1, NULL, &devLoadMap},
+            (MenuItem){BUTTON, "Wipe livewell records", &dummy, -1, NULL, &devClearLivewell},
             (MenuItem){BUTTON, "Return to previous menu", &dummy, -1, NULL, &ret},
         };
         void (*menuPtr)(int *);
-        menuPtr = printMenu("Fishing C > Main menu > Developer > Action test", menu, 6, sel, (Color[]){BLACK, WHITE});
+        menuPtr = printMenu("Fishing C > Main menu > Developer > Action test", menu, 7, sel, (Color[]){BLACK, WHITE});
         menuPtr(sel);
     }
 }
@@ -622,32 +633,33 @@ void rootMenu()
         }
         MenuItem *menu = (MenuItem[]){
             (MenuItem){BUTTON, "Start", &dummy, -1, NULL, &startMenu},
-            (MenuItem){BUTTON, "Save game", &dummy, -1, NULL, &saveActiveProfile},
+            (MenuItem){BUTTON, "Custom game", &dummy, -1, NULL, &customMenu},
             (MenuItem){BUTTON, "Change profile", &dummy, -1, NULL, &profileMenu},
             (MenuItem){BUTTON, "Settings", &dummy, -1, NULL, &settingsMenu},
             (MenuItem){BUTTON, "Livewell", &dummy, -1, NULL, &livewellMenu},
             (MenuItem){BUTTON, "Exit", &dummy, -1, NULL, &ret},
             (MenuItem){BUTTON, "Developer", &dummy, -1, NULL, &devMenu},
             (MenuItem){BUTTON, "Dummy menu entry", &dummy, -1, NULL, &testItemEntry},
+            (MenuItem){BUTTON, "Dummy menu entry", &dummy, -1, NULL, &testItemEntry},
         };
         if (profiles[activeProfile].progression.mapUnlocks[0] & 0x08)
         {
-            menu[7] = menu[6];
-            menu[6] = menu[5];
-            menu[5] = (MenuItem){BUTTON, "Credits", &dummy, -1, NULL, &credits};
+            memcpy(&menu[7], &menu[6], 3);
+            menu[6] = (MenuItem){BUTTON, "Credits", &dummy, -1, NULL, &credits};
+            menu[7] = (MenuItem){BUTTON, "Developer", &dummy, -1, NULL, &devMenu};
         }
         void (*menuPtr)(int *);
-        void (*nargPtr)();
+        // void (*nargPtr)();
         menuPtr = printMenu("Fishing C > Main menu", menu, (enableDevMenu ? 7 : 6) + (profiles[activeProfile].progression.mapUnlocks[0] & 0x08 ? 1 : 0), &sel, (Color[]){BLACK, WHITE});
-        if (sel == 1)
+        menuPtr(&sel);
+        /*if (sel == 1)
         {
             nargPtr = (void (*)(void))menuPtr;
             nargPtr();
         }
         else
         {
-            menuPtr(&sel);
-        }
+        }*/
         if (activeProfile == -1)
             ret(&sel);
         if (last == -1)
@@ -773,7 +785,10 @@ void playMap(int *sel)
     playSound(buf, 1);
     printf("Loaded map: %s\n", mapTitle.name);
     if (profiles[activeProfile].progression.mode == ARCADE)
+    {
         mapGoal.type = SANDBOX;
+        profiles[activeProfile].maxThrows = rand() % 16 + 5;
+    }
     mapLoop(*sel);
     if (profiles[activeProfile].progression.mode == ARCADE || profiles[activeProfile].progression.playing == -2)
         return;
@@ -844,6 +859,166 @@ void playMap(int *sel)
     clearScreen();
 }
 
+void customMenu(int *sel)
+{
+    if (!(profiles[activeProfile].progression.mapUnlocks[0] & 0x04))
+    {
+        clearScreen();
+        printf("\nFishing C > Main menu > Custom game\n\nCustom mode is currently locked");
+        printf("\n\nTo unlock this mode, complete game in Normal or Hard\ndifficulty mode.\n\n");
+        printf("Press any key to continue . . . ");
+        readKey(false);
+        return;
+    }
+    ex--;
+    int checkEx = ex + 1;
+    last = *sel;
+    *sel = 0;
+    struct dirent *de;
+    DIR *dr = opendir("maps");
+    MapsDef allMaps[99];
+    LivewellData fish[99];
+    if (dr == NULL)
+    {
+        printf("\nFishing C > Main menu > Custom game\n\nCould not open maps directory\n\nPress any key to continue . . . ");
+        readKey(false);
+        ret(sel);
+    }
+    int fishCount = 0;
+    int localMapsCount = 0;
+    char fullName[0x30];
+    char fishFiles[99][0x20];
+    for (int i = 0; i < 99; i++)
+    {
+        for (int j = 0; j < 0x20; j++)
+            fishFiles[i][j] = '\0';
+    }
+    while ((de = readdir(dr)) != NULL)
+    {
+        if (de->d_name[0] != '.' && strcmp(de->d_name, "maps.def") != 0)
+        {
+            fullName[0] = '\0';
+            char mapFile[8];
+            for (int i = 0; i < 8; i++)
+                mapFile[i] = '\0';
+            char mapName[20];
+            memcpy(mapFile, de->d_name, strlen(de->d_name) - 4); // remove .map extension
+
+            // skip secret maps if they aren't unlocked yet
+            int exclude = false;
+            for (int i = 0; i < mapsCount; i++)
+            {
+                if (strcmp(mapsList[i].file, mapFile) == 0 && mapsList[i].secret)
+                {
+                    exclude = profiles[activeProfile].progression.solmn != TRUE;
+                    break;
+                }
+            }
+            if (exclude)
+                continue;
+            strcat(fullName, "maps/");
+            strcat(fullName, de->d_name);
+            short strlen;
+            FILE *mapFileStream = fopen(fullName, "rb");
+            fseek(mapFileStream, 0x8, SEEK_SET);
+            fread(&strlen, 2, 1, mapFileStream);
+            fseek(mapFileStream, 0x10, SEEK_SET);
+            fread(&mapName, strlen, 1, mapFileStream);
+            fclose(mapFileStream);
+            strcpy(allMaps[localMapsCount].name, mapName);
+            strcpy(allMaps[localMapsCount].file, mapFile);
+            localMapsCount++;
+        }
+    }
+    closedir(dr);
+    dr = opendir("fsh");
+    while ((de = readdir(dr)) != NULL)
+    {
+        if (de->d_name[0] != '.')
+        {
+            fullName[0] = '\0';
+            strcat(fullName, "fsh/");
+            strcat(fullName, de->d_name);
+            LivewellData fshTmp = loadFishMeta(fullName);
+            if (strcmp(fshTmp.name, "MISSINGNAME") == 0 || strcmp(fshTmp.name, "A missing salmon") == 0)
+                continue;
+            fish[fishCount] = fshTmp;
+            memcpy(fishFiles[fishCount], de->d_name, strlen(de->d_name) - 4);
+            fishCount++;
+        }
+    }
+    strcpy(fish[fishCount].name, "boots");
+    strcpy(fishFiles[fishCount], "boot");
+    fishCount++;
+    FishToggle fishToggles[fishCount];
+    for (int i = 0; i < fishCount; i++)
+    {
+        fishToggles[i].enabled = rand() % 2;
+        strcpy(fishToggles[i].fishFile, fishFiles[i]);
+        strcpy(fishToggles[i].fishName, fish[i].name);
+    }
+    CustomStage customGame;
+    customGame.arcadeRules = false;
+    customGame.environmentId = 0;
+    memcpy(customGame.fishToggles, fishToggles, fishCount * sizeof(FishToggle));
+    customGame.goalWeight = 499;
+    customGame.throwCount = 15;
+    MenuItem items[7 + fishCount];
+    // MenuItem items[6 + fishCount];
+    char *fishLabels[fishCount];
+    for (int i = 0; i < fishCount; i++)
+    {
+        char buf[64];
+        buf[0] = '\0';
+        strcat(buf, "Summon ");
+        strcat(buf, fish[i].name);
+        fishLabels[i] = malloc(64);
+        strcpy(fishLabels[i], buf);
+    }
+    char *mapsLabels[localMapsCount];
+    for (int i = 0; i < localMapsCount; i++)
+    {
+        mapsLabels[i] = allMaps[i].name;
+    }
+    items[0] = (MenuItem){CHOICE, "Environment", &customGame.environmentId, localMapsCount, mapsLabels, &dummyFunc};
+    items[1] = (MenuItem){SELECTOR, "Goal (kg)", &(customGame.goalWeight), 2000, NULL, &dummyFunc};
+    items[2] = (MenuItem){CHECKBOX, "Arcade rules (limited throws, hardcore fishing)", &customGame.arcadeRules, 2, NULL, &dummyFunc};
+    items[3] = (MenuItem){SELECTOR, "Throws", &customGame.throwCount, 63, NULL, &dummyFunc};
+    for (int i = 4; i < 4 + fishCount; i++)
+    {
+        items[4 + (i - 4)] = (MenuItem){CHECKBOX, (fishLabels[i - 4]), &(customGame.fishToggles[i - 4].enabled), 2, NULL, &dummyFunc};
+    }
+    items[4 + fishCount] = (MenuItem){BUTTON, "Random", &dummy, -1, NULL, &dummyFunc};
+    items[5 + fishCount] = (MenuItem){BUTTON, "Start game", &dummy, -1, NULL, &dummyFunc};
+    items[6 + fishCount] = (MenuItem){BUTTON, "Go back", &dummy, -1, NULL, &ret};
+
+    while (ex < checkEx)
+    {
+        void (*menuPtr)(int *);
+        menuPtr = printMenu("Fishing C > Main menu > Custom game", items, 7 + fishCount, sel, (Color[]){BLACK, WHITE});
+        menuPtr(sel);
+        if (*sel == 5 + fishCount)
+        {
+            char buf[32];
+            buf[0] = '\0';
+            snprintf(buf, 32, "maps/%s.map", allMaps[customGame.environmentId].file);
+            stopSound();
+            cmLoader(customGame, buf, allMaps[customGame.environmentId].name);
+        }
+        else if (*sel == 4 + fishCount)
+        {
+            customGame.goalWeight = rand() % 2000;
+            customGame.environmentId = rand() % localMapsCount;
+            customGame.throwCount = rand() % 64;
+            for (int i = 0; i < fishCount; i++)
+            {
+                customGame.fishToggles[i].enabled = rand() % 2;
+            }
+            customGame.arcadeRules = rand() % 2;
+        }
+    }
+}
+
 void startMenu(int *sel)
 {
     if (mapsCount == 0)
@@ -884,7 +1059,9 @@ void startMenu(int *sel)
             break;
         }
         void (*menuPtr)(int *);
-        menuPtr = printMenu("Fishing C > Main menu > Start game", menu, mapsCount + (profiles[activeProfile].progression.solmn == READY), sel, (Color[]){BLACK, WHITE});
+        char buf[128];
+        sprintf(buf, "Fishing C > Main menu > Start game\n\nWhere to go fishing, %s?", profiles[activeProfile].options.name);
+        menuPtr = printMenu(buf, menu, mapsCount + (profiles[activeProfile].progression.solmn == READY), sel, (Color[]){BLACK, WHITE});
         menuPtr(sel);
     }
 }
@@ -901,7 +1078,7 @@ void toggleSetting(int *sel)
     }
 }
 
-void delProfile(int *sel)
+void confirmDeleteProfile(int *sel)
 {
     char buf[32];
     snprintf(buf, 32, "save/profile%d.dat", activeProfile + 1);
@@ -911,34 +1088,63 @@ void delProfile(int *sel)
     ret(sel);
 }
 
+void delProfile(int *sel)
+{
+    ex--;
+    int checkEx = ex + 1;
+    last = *sel;
+    *sel = 0;
+    MenuItem *menu = (MenuItem[]){
+        (MenuItem){BUTTON, "No", &dummy, -1, NULL, &ret},
+        (MenuItem){BUTTON, "No", &dummy, -1, NULL, &ret},
+        (MenuItem){BUTTON, "No", &dummy, -1, NULL, &ret},
+        (MenuItem){BUTTON, "No", &dummy, -1, NULL, &ret},
+        (MenuItem){BUTTON, "No", &dummy, -1, NULL, &ret},
+        (MenuItem){BUTTON, "No", &dummy, -1, NULL, &ret},
+        (MenuItem){BUTTON, "No", &dummy, -1, NULL, &ret},
+        (MenuItem){BUTTON, "No", &dummy, -1, NULL, &ret},
+    };
+    menu[rand() % 7 + 1] = (MenuItem){BUTTON, "Yes", &dummy, -1, NULL, &confirmDeleteProfile};
+    while (ex < checkEx)
+    {
+        void (*menuPtr)(int *);
+        char buf[512];
+        snprintf(buf, 512, "Fishing C > Main menu > Settings > Delete profile\n\nThis command will remove this profile (%s in Profile %d), which\nincludes your progress and overall game data stored in your profile.\n\nTHIS CANNOT BE UNDONE!\n\nAre you sure you want to continue?", profiles[activeProfile].options.name, activeProfile + 1);
+        menuPtr = printMenu(buf, menu, 8, sel, (Color[]){BLACK, WHITE});
+        menuPtr(sel);
+    }
+}
+
 void settingsMenu(int *sel)
 {
     ex--;
     int checkEx = ex + 1;
     last = *sel;
     *sel = 0;
+    MenuItem *menu = (MenuItem[]){
+        (MenuItem){CHECKBOX, "Enable music", &profiles[activeProfile].options.music, 2, NULL, &toggleSetting},
+        (MenuItem){CHECKBOX, "Enable SFX", &profiles[activeProfile].options.sfx, 2, NULL, &toggleSetting},
+        (MenuItem){CHECKBOX, "Use autosave", &profiles[activeProfile].options.autosave, 2, NULL, &toggleSetting},
+        (MenuItem){CHECKBOX, "Enable story/instructions", &profiles[activeProfile].options.storytell, 2, NULL, &toggleSetting},
+        (MenuItem){CHOICE, "Difficulty", (int *)&profiles[activeProfile].options.difficulty, profiles[activeProfile].progression.mapUnlocks[0] & 0x04 ? 4 : 3, profiles[activeProfile].progression.mapUnlocks[0] & 0x04 ? (char *[]){"Easy", "Normal", "Hard", "Super Hard"} : (char *[]){"Easy", "Normal", "Hard"}, &ret},
+        (MenuItem){CHOICE, "Rod color", (int *)&profiles[activeProfile].options.rodColor, 14, (char *[]){"Blue", "Green", "Aqua", "Red", "Purple", "Gold", "White", "Gray", "Light blue", "Lime", "Cyan", "Bright red", "Magenta", "Yellow"}, &ret},
+        (MenuItem){BUTTON, "Change name", &dummy, -1, NULL, &nameEntry},
+        (MenuItem){BUTTON, "Save profile", &dummy, -1, NULL, &saveActiveProfile},
+        (MenuItem){BUTTON, "Delete profile", &dummy, -1, NULL, &delProfile},
+        (MenuItem){BUTTON, "Go back to main menu", &dummy, -1, NULL, &ret},
+    };
+    int rodUnlock = profiles[activeProfile].progression.mapUnlocks[0] & 0x02;
+    if (!rodUnlock)
+    {
+        menu[5] = menu[6];
+        menu[6] = menu[7];
+        menu[7] = menu[8];
+        menu[8] = menu[9];
+    }
     while (ex < checkEx)
     {
-        MenuItem *menu = (MenuItem[]){
-            (MenuItem){CHECKBOX, "Enable music", &profiles[activeProfile].options.music, 2, NULL, &toggleSetting},
-            (MenuItem){CHECKBOX, "Enable SFX", &profiles[activeProfile].options.sfx, 2, NULL, &toggleSetting},
-            (MenuItem){CHECKBOX, "Use autosave", &profiles[activeProfile].options.autosave, 2, NULL, &toggleSetting},
-            (MenuItem){CHECKBOX, "Enable story/instructions", &profiles[activeProfile].options.storytell, 2, NULL, &toggleSetting},
-            (MenuItem){CHOICE, "Difficulty", (int *)&profiles[activeProfile].options.difficulty, profiles[activeProfile].progression.mapUnlocks[0] & 0x04 ? 4 : 3, profiles[activeProfile].progression.mapUnlocks[0] & 0x04 ? (char *[]){"Easy", "Normal", "Hard", "Super Hard"} : (char *[]){"Easy", "Normal", "Hard"}, &ret},
-            (MenuItem){CHOICE, "Rod color", (int *)&profiles[activeProfile].options.rodColor, 14, (char *[]){"Blue", "Green", "Aqua", "Red", "Purple", "Gold", "White", "Gray", "Light blue", "Lime", "Cyan", "Bright red", "Magenta", "Yellow"}, &ret},
-            (MenuItem){BUTTON, "Change name", &dummy, -1, NULL, &nameEntry},
-            (MenuItem){BUTTON, "Delete profile", &dummy, -1, NULL, &delProfile},
-            (MenuItem){BUTTON, "Go back to main menu", &dummy, -1, NULL, &ret},
-        };
-        int rodUnlock = profiles[activeProfile].progression.mapUnlocks[0] & 0x02;
-        if (!rodUnlock)
-        {
-            menu[5] = menu[6];
-            menu[6] = menu[7];
-            menu[7] = menu[8];
-        }
         void (*menuPtr)(int *);
-        menuPtr = printMenu("Fishing C > Main menu > Settings", menu, rodUnlock ? 9 : 8, sel, (Color[]){BLACK, WHITE});
+        menuPtr = printMenu("Fishing C > Main menu > Settings", menu, rodUnlock ? 10 : 9, sel, (Color[]){BLACK, WHITE});
         menuPtr(sel);
     }
 }
@@ -953,7 +1159,7 @@ int fishingMenu(char *title, int *defaults, void *fCast, void *fLore, void *fExi
                 (MenuItem){fCast == &dummyFunc ? DISABLED_BUTTON : BUTTON, "Cast", &dummy, -1, NULL, fCast},
                 (MenuItem){SELECTOR, "Distance", defaults, 20, NULL, NULL},
                 (MenuItem){SELECTOR, "Angle", &defaults[1], 20, NULL, NULL},
-                (MenuItem){BUTTON, "Save game", &dummy, -1, NULL, &saveActiveProfile},
+                (MenuItem){profiles[activeProfile].progression.mode != CUSTOM ? BUTTON : DISABLED_BUTTON, "Save game", &dummy, -1, NULL, &saveActiveProfile},
                 (MenuItem){fLore == &dummyFunc ? DISABLED_BUTTON : BUTTON, "Lore", &dummy, -1, NULL, fLore},
                 (MenuItem){BUTTON, "Scouting map", &dummy, -1, NULL, &dummyFunc},
                 (MenuItem){BUTTON, "Give up", &dummy, -1, NULL, fExit},

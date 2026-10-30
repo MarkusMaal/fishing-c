@@ -103,7 +103,7 @@ void titleScreen()
     while (true)
     {
         rKey = readKey(true);
-        if (strcmp(rKey, "1") != 0)
+        if (strcmp(rKey, "1") != 0 && strcmp(rKey, "-1") != 0) // fix for terminals the may spam -1 here (idk why), so ignore those inputs as well
             break;
         if ((clock() - start_time) / CLOCKS_PER_SEC * 1000 > 30000)
         {
@@ -175,6 +175,7 @@ void demoPlay()
     profiles[activeProfile].options.autosave = false;
     profiles[activeProfile].options.storytell = false;
     profiles[activeProfile].options.difficulty = EASY;
+    profiles[activeProfile].maxThrows = 1;
     playMap(&mapId);
     activeProfile = backup;
 }

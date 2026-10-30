@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "map.h"
 #include "profile.h"
+#include "custom.h"
 
 /**
  * Return to previous menu
@@ -74,4 +75,7 @@ void deDev(int *sel);
 void credits();
 void devLoadMap(int *sel);
 void delProfile(int *sel);
+void confirmDeleteProfile(int *sel);
+void customMenu(int *sel);
+void devClearLivewell();
 #endif

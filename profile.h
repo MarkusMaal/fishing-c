@@ -100,6 +100,7 @@ typedef struct
     Options options;
     LivewellRecord livewell[32];
     unsigned char localSpawnTable[0x190];
+    int maxThrows;
 } PlayerProfile;
 
 extern PlayerProfile profiles[8];

@@ -159,6 +159,7 @@ void initProfile(int idx)
         NORMAL,
         R_RED,
         "Unnamed"};
+    profiles[idx].maxThrows = 0;
     for (int i = 0; i < 32; i++)
     {
         profiles[idx].livewell[i] =
