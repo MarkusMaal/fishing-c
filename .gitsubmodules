@@ -1,0 +1,3 @@
+[submodule "audio-player"]
+    path = audio-player
+    url = https://github.com/saad-out/C-Audio-Player
