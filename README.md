@@ -35,11 +35,11 @@ However, unlike the original batch game, this version makes heavy use of data-dr
 
 ## Compiling
 
-## Linux
+### Linux
 
 Install libao and libmpg123 dependencies and gcc compiler. Then you should be able to run `make` to automatically compile the game.
 
-## Windows
+### Windows
 
 Compilation on Windows should be done with [Cygwin](https://cygwin.com/). Install it with the following packages: gcc-core, libao and libmpg123. Then you can run Cygwin64 terminal and use the `make` command to build an executable.
 
@@ -47,7 +47,7 @@ To resolve DLL errors, copy the DLL files mentioned on the error messages from `
 
 Note: It's recommended to disable legacy console for colors to be displayed correctly.
 
-## macOS
+### macOS
 
 Install libao and libmpg123 using [Homebrew](https://brew.sh). Then run `make brew` to automatically compile the game.
 
