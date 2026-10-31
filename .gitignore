@@ -1,6 +1,5 @@
 save/*.dat
 save/*.dat.bak
-audio-player
 .vscode
 fishingc
 fishingc.exe
