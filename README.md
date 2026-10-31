@@ -1,6 +1,6 @@
 # Fishing in C
 
-Text-based fishing game, which is a port of my old batch game "Fishing Batch" to the C programming language. The project is currently in development, but all the maps from the original game are playable.
+Text-based fishing game, which is a port of my old batch game "Fishing Batch" to the C programming language. The features from that game have all been ported over, but some unique features are planned for future updates.
 
 However, unlike the original batch game, this version makes heavy use of data-driving. The following things are data-driven:
 
