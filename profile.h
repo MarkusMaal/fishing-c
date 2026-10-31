@@ -60,7 +60,7 @@ typedef enum
 {
     FIND_ME_IF_YOU_CAN,
     READY,
-    TRUE
+    SOLMN_TRUE
 } Salmon;
 
 typedef enum : short

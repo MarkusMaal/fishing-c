@@ -35,7 +35,23 @@ However, unlike the original batch game, this version makes heavy use of data-dr
 
 ## Compiling
 
-Compiling instructions will not be provided until final version is publically available, however there is a makefile, so you may be able to make use of that to get the beta version -_-
+## Linux
+
+Install libao and libmpg123 dependencies and gcc compiler. Then you should be able to run `make` to automatically compile the game.
+
+## Windows
+
+Compilation on Windows should be done with [Cygwin](https://cygwin.com/). Install it with the following packages: gcc-core, libao and libmpg123. Then you can run Cygwin64 terminal and use the `make` command to build an executable.
+
+To resolve DLL errors, copy the DLL files mentioned on the error messages from `<cygwin64 install dir>\bin` to the game folder.
+
+Note: It's recommended to disable legacy console for colors to be displayed correctly.
+
+## macOS
+
+Install libao and libmpg123 using [Homebrew](https://brew.sh). Then run `make brew` to automatically compile the game.
+
+This will use cmake by default, but you can replace it with gcc if you want to.
 
 ## Features currently implemented
 
@@ -61,6 +77,7 @@ Compiling instructions will not be provided until final version is publically av
 - Scoreboard
 - Arcade mode
 - Custom game mode
+- New map: Swampy Lake (custom mode environment)
 
 ## Features to be implemented
 
@@ -70,7 +87,7 @@ All features from the previous version have been ported!
 
 ### New features
 
-- Maps: Swampy Lake, River Falls, Jelly Fun Place
+- Maps: River Falls, Jelly Fun Place
 - Lures
 - Player stats (stuff like how much fish you've caught in total, what's your luck been like, etc.)
 - Map editor (maybe in the future for release v2.1)

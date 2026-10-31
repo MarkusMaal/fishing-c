@@ -364,7 +364,7 @@ void credits()
         }
         printf("\n");
         sleep(1);
-        if (profiles[activeProfile].progression.solmn == TRUE)
+        if (profiles[activeProfile].progression.solmn == SOLMN_TRUE)
         {
             printf("             A salmon has been found. It has now become   Õ§   s    \n");
         }
@@ -437,7 +437,7 @@ void credits()
         }
         clearScreen();
         usleep(66667);
-        if (profiles[activeProfile].progression.solmn == TRUE)
+        if (profiles[activeProfile].progression.solmn == SOLMN_TRUE)
         {
             clearScreen();
             printf("\n%s %s %s %s\n%s %s\n\n%s %s\n\nPress any key to continue . . . ",
@@ -456,7 +456,7 @@ void credits()
     sleep(2);
     stopSound();
     chcolor((Color[]){BLACK, WHITE});
-    if (profiles[activeProfile].progression.solmn != TRUE)
+    if (profiles[activeProfile].progression.solmn != SOLMN_TRUE)
     {
         playSound("snd/menu_bg.mp3", true);
     }
@@ -585,6 +585,9 @@ void testItemEntry(int *sel)
 
 void rootMenu()
 {
+#ifdef __CYGWIN__
+	SetConsoleTitle("Main menu");
+#endif
     int sel = 0;
     while (!ex)
     {
@@ -821,7 +824,7 @@ void playMap(int *sel)
             {
                 if (!mapsList[*sel + 1].secret)
                 {
-                    printf("New fishing place unlocked: %s\n\nTo play the new stage, go to start in the main menu and\nselect %s\n\n", mapsList[*sel + 1].name, mapsList[*sel + 1].name);
+                    printf("New stage unlocked!\n\nTo play this stage, go to start in the main menu and\nselect it.\n\n");
                 }
                 profiles[activeProfile]
                     .progression.mapUnlocks[mapsList[*sel].idx] = profiles[activeProfile]
@@ -849,7 +852,7 @@ void playMap(int *sel)
             profiles[activeProfile].progression.storiesTold[0] |= 0x02;
         }
         if (profiles[activeProfile].progression.solmn == READY)
-            profiles[activeProfile].progression.solmn = TRUE; // enable creepy mode
+            profiles[activeProfile].progression.solmn = SOLMN_TRUE; // enable creepy mode
         else if (profiles[activeProfile].options.difficulty == SUPER_HARD)
             profiles[activeProfile].progression.solmn = READY; // enable secret map
         if (profiles[activeProfile].options.difficulty != EASY)
@@ -914,7 +917,7 @@ void customMenu(int *sel)
             {
                 if (strcmp(mapsList[i].file, mapFile) == 0 && mapsList[i].secret)
                 {
-                    exclude = profiles[activeProfile].progression.solmn != TRUE;
+                    exclude = profiles[activeProfile].progression.solmn != SOLMN_TRUE;
                     break;
                 }
             }

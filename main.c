@@ -2,6 +2,9 @@
 
 int main()
 {
+#ifdef __CYGWIN__
+	SetConsoleTitle("Fishing");
+#endif
     char *initStr = "Initializing...";
     printf(initStr);
     demo = NO_DEMO;
@@ -71,6 +74,7 @@ void splashScreen()
 void titleScreen()
 {
     FishData *fsh = malloc(sizeof(FishData));
+	unsigned long time = 0;
     for (long unsigned int i = 0; i < sizeof(FishData); i++)
         ((char *)fsh)[i] = 0;
     *fsh = loadFish(rand() % 100 == 2 ? "fsh/lama.fsh" : "fsh/friendlytrout.fsh");
@@ -92,7 +96,6 @@ void titleScreen()
         printf("%s%s", pad, fsh->geometry[0][i]);
     }
 
-    long start_time = clock();
     locate(16, padSize + 7);
     printf("Fishing C 2.0");
 
@@ -103,11 +106,21 @@ void titleScreen()
     while (true)
     {
         rKey = readKey(true);
+        time++;
+#ifdef __CYGWIN__
+        if (strcmp(rKey, "space") == 0 || strcmp(rKey, "32") == 0)
+            break;
+        #else
         if (strcmp(rKey, "1") != 0 && strcmp(rKey, "-1") != 0) // fix for terminals the may spam -1 here (idk why), so ignore those inputs as well
             break;
-        if ((clock() - start_time) / CLOCKS_PER_SEC * 1000 > 30000)
+#endif
+#ifdef __CYGWIN__
+        if (time > 30000)
+#else
+        if (time > 300000)
+#endif
         {
-            start_time = clock();
+            time = 0;
             switch (demo)
             {
             case GAMEPLAY:
@@ -149,7 +162,11 @@ void titleScreen()
             break;
         }
         locate(18, padSize + 1);
+#ifdef __CYGWIN__
+        printf(even ? "Press spacebar to start..." : "                          ");
+#else
         printf(even ? "Press any key to start..." : "                         ");
+#endif
         even = !even;
         fflush(stdout);
     }

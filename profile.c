@@ -96,7 +96,7 @@ void saveProfile(PlayerProfile profile, int idx)
     }
     unsigned int checksum = crc32((char *)&profile, sizeof(PlayerProfile));
     fwrite(&checksum, 4, 1, outfile);
-    if ((profile.progression.solmn == TRUE) && rand() % 1000 == 1) // 0.01% chance to corrupt the save file when "corrupted mode" is active
+    if ((profile.progression.solmn == SOLMN_TRUE) && rand() % 1000 == 1) // 0.01% chance to corrupt the save file when "corrupted mode" is active
     {
         for (long unsigned int i = sizeof(ProfileHeader); i < sizeof(PlayerProfile); i++)
         {
@@ -184,6 +184,9 @@ void initProfile(int idx)
 
 void profileMenu()
 {
+#ifdef __CYGWIN__
+	SetConsoleTitle("Profiles");
+#endif
     int sel = 0;
     ProfileHeader *headers = malloc(sizeof(ProfileHeader) * 4);
     for (int i = 0; i < 4; i++)

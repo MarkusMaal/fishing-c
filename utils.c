@@ -15,20 +15,56 @@ char *readKey(int timeout)
 {
     rand();
     char c;
-    struct termios old, t;
     char special;
+    struct termios old, t;
+#ifdef __CYGWIN__
+	if (timeout == 0) {
+#endif
     tcgetattr(STDIN_FILENO, &old);
     t = old;
     cfmakeraw(&t);
     tcsetattr(STDIN_FILENO, TCSANOW, &t);
+#ifdef __CYGWIN__
+	}
+#endif
     if (timeout != 0)
     {
+#ifndef __CYGWIN__
         kthread_exit = 1;
         pthread_create(&kbdThread, NULL, waitKey, NULL);
         usleep(1);
         pthread_cancel(kbdThread);
         c = kthread_exit;
         kthread_exit = 0;
+#else
+	   c = 1;
+	   for (int keyCode = 7; keyCode < 256; ++keyCode) {
+            if (GetAsyncKeyState(keyCode) & 0x8000) {
+				switch (keyCode)
+				{
+					case 40:
+						c = 66;
+						break;
+					case 39:
+						c = 67;
+						break;
+					case 38:
+						c = 65;
+						break;
+					case 37:
+						c = 68;
+						break;
+					case 32:
+						return "space";
+					default:
+						c = (char)(keyCode) + 32;
+						break;
+				}
+				while (GetAsyncKeyState(keyCode) & 0x8000);
+				break;
+            }
+       }
+#endif
     }
     else
     {
@@ -41,13 +77,21 @@ char *readKey(int timeout)
         special = 1;
     if (c == 127)
         special = 1;
+	
+#ifdef __CYGWIN__
+	if (timeout == 0) {
+#endif
     if (c == 27)
     {
         getc(stdin);
         c = getc(stdin);
         special = 1;
     }
-    tcsetattr(STDIN_FILENO, TCSANOW, &old);
+	tcsetattr(STDIN_FILENO, TCSANOW, &old);
+	
+#ifdef __CYGWIN__
+	}
+#endif
     char *str = malloc(128);
 
     if (!special)
@@ -167,7 +211,7 @@ void *printMenu(char *title, MenuItem *items, int max, int *sel, Color *defaultC
         {
             char *txtBuf = malloc(strlen(items[i].text) + 1);
             strcpy(txtBuf, items[i].text);
-            if (profiles[activeProfile].progression.solmn == TRUE)
+            if (profiles[activeProfile].progression.solmn == SOLMN_TRUE)
             {
                 srand((size_t)items[i].text); // use memory address of the original string as the seed
                 for (size_t i = 0; i < strlen(txtBuf); i++)
@@ -238,10 +282,10 @@ void *printMenu(char *title, MenuItem *items, int max, int *sel, Color *defaultC
                 playSound("snd/positive.mp3", 0);
                 break;
             case READY:
-                profiles[activeProfile].progression.solmn = TRUE;
+                profiles[activeProfile].progression.solmn = SOLMN_TRUE;
                 playSound("snd/error.mp3", 0);
                 break;
-            case TRUE:
+            case SOLMN_TRUE:
                 profiles[activeProfile].progression.solmn = FIND_ME_IF_YOU_CAN;
                 playSound("snd/negative.mp3", 0);
                 break;
@@ -339,7 +383,7 @@ void playSound(char *fileName, char loop)
 {
     if (loop)
     {
-        if (profiles[activeProfile].progression.solmn == TRUE && rand() % 8 == 1)
+        if (profiles[activeProfile].progression.solmn == SOLMN_TRUE && rand() % 8 == 1)
             return;
         if (!profiles[activeProfile].options.music)
             return;

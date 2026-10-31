@@ -4,11 +4,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h> /* for STDIN_FILENO */
-#include <termios.h>
+#include <sys/termios.h>
 #include <string.h>
 #include "simpleaudio.h"
 #include <pthread.h>
 #include <signal.h>
+#ifdef __CYGWIN__
+#include <windows.h>
+#endif
 typedef struct
 {
     char name[20];

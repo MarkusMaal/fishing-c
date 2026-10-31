@@ -364,14 +364,15 @@ void mapLoop(int mapId)
             clearScreen();
         }
 
-        char targetsString[0x1A * mapGoal.variation];
-        // create the list of fish left to catch in format Fish A, Fish B, Fish C
-        for (unsigned int i = 0; i < 0x1A * mapGoal.variation; i++)
-        {
-            targetsString[i] = 0;
-        }
+		char targetsString[0x1A * MIN(mapGoal.variation, 15)];
         if (mapGoal.type == TARGET)
         {
+			// create the list of fish left to catch in format Fish A, Fish B, Fish C
+			for (unsigned int i = 0; i < 0x1A * MIN(mapGoal.variation, 15); i++)
+			{
+				targetsString[i] = 0;
+			}
+			
             for (int i = 0; i < (int)mapGoal.variation; i++)
             {
                 if (profiles[activeProfile].progression.targets[i] != -1)
@@ -473,6 +474,15 @@ void mapLoop(int mapId)
             cast((int[]){tx, ty});
             continue;
         }
+#ifdef __CYGWIN__
+	char oneLiner[1024];
+	for (int i = 0; i < 1024; i++)
+	{
+		if (statusMessage[i] == '\n') break;
+		oneLiner[i] = statusMessage[i];
+	}
+	SetConsoleTitle(oneLiner);
+#endif
         int sel = fishingMenu(statusMessage, (int[]){tx, ty}, cast, profiles[activeProfile].progression.mode != CUSTOM ? loreDisplay : dummyFunc, exitMap, (Color[]){mapColor.bg, mapColor.fg});
         if (sel == 6)
         {

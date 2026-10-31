@@ -181,7 +181,7 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
             goto skipread;
         }
         char *rKey = "1";
-        long start_time = clock();
+        unsigned long start_time = clock();
         if (profiles[activeProfile].progression.mode == DEMO)
             sleep(1);
         if (profiles[activeProfile].progression.mode != DEMO)
@@ -191,7 +191,7 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
                 rKey = readKey(true);
                 if (strcmp(rKey, "1") != 0 && strcmp(rKey, "-1") != 0)
                     break;
-                if ((clock() - start_time) / CLOCKS_PER_SEC * 1000 > (2000 - (int)profiles[activeProfile].options.difficulty * 500))
+                if ((clock() - start_time) / CLOCKS_PER_SEC * 1000 > (unsigned long)(2000 - (int)profiles[activeProfile].options.difficulty * 500))
                     break;
                 fflush(stdout);
             }
