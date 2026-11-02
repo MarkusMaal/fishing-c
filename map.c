@@ -282,7 +282,14 @@ void drawMap(int dx, int dy)
             {
                 int water_x = x - (mapWater.x + 1);
                 int water_y = y - (mapWater.y + 1);
-                cprintf("█", (Color[]){mapColor.bg, (water_x >= bait_x) && (water_y == bait_y) && (water_x < bait_x + 5) ? LRED : ch.color, mapColor.bg, mapColor.fg});
+                if (dx == -1 && dy == -1)
+                {
+                    cprintf("w", (Color[]){LMAGENTA, BLACK, mapColor.bg, mapColor.fg});
+                }
+                else
+                {
+                    cprintf("█", (Color[]){mapColor.bg, (water_x >= bait_x) && (water_y == bait_y) && (water_x < bait_x + 5) ? LRED : ch.color, mapColor.bg, mapColor.fg});
+                }
             }
             else
             {
@@ -364,15 +371,15 @@ void mapLoop(int mapId)
             clearScreen();
         }
 
-		char targetsString[0x1A * MIN(mapGoal.variation, 15)];
+        char targetsString[0x1A * MIN(mapGoal.variation, 15)];
         if (mapGoal.type == TARGET)
         {
-			// create the list of fish left to catch in format Fish A, Fish B, Fish C
-			for (unsigned int i = 0; i < 0x1A * MIN(mapGoal.variation, 15); i++)
-			{
-				targetsString[i] = 0;
-			}
-			
+            // create the list of fish left to catch in format Fish A, Fish B, Fish C
+            for (unsigned int i = 0; i < 0x1A * MIN(mapGoal.variation, 15); i++)
+            {
+                targetsString[i] = 0;
+            }
+
             for (int i = 0; i < (int)mapGoal.variation; i++)
             {
                 if (profiles[activeProfile].progression.targets[i] != -1)
@@ -475,13 +482,14 @@ void mapLoop(int mapId)
             continue;
         }
 #ifdef __CYGWIN__
-	char oneLiner[1024];
-	for (int i = 0; i < 1024; i++)
-	{
-		if (statusMessage[i] == '\n') break;
-		oneLiner[i] = statusMessage[i];
-	}
-	SetConsoleTitle(oneLiner);
+        char oneLiner[1024];
+        for (int i = 0; i < 1024; i++)
+        {
+            if (statusMessage[i] == '\n')
+                break;
+            oneLiner[i] = statusMessage[i];
+        }
+        SetConsoleTitle(oneLiner);
 #endif
         int sel = fishingMenu(statusMessage, (int[]){tx, ty}, cast, profiles[activeProfile].progression.mode != CUSTOM ? loreDisplay : dummyFunc, exitMap, (Color[]){mapColor.bg, mapColor.fg});
         if (sel == 6)

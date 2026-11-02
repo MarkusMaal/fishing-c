@@ -4,6 +4,7 @@
 #include "map.h"
 #include "profile.h"
 #include "custom.h"
+#include "editor.h"
 
 /**
  * Return to previous menu

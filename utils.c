@@ -3,7 +3,7 @@
 
 MapsDef *mapsList = NULL;
 int mapsCount = 0;
-int dummy = 0;
+short dummy = 0;
 t_sound *bgm = NULL;
 pthread_t bgmThread;
 pthread_t kbdThread;
@@ -18,14 +18,15 @@ char *readKey(int timeout)
     char special;
     struct termios old, t;
 #ifdef __CYGWIN__
-	if (timeout == 0) {
+    if (timeout == 0)
+    {
 #endif
-    tcgetattr(STDIN_FILENO, &old);
-    t = old;
-    cfmakeraw(&t);
-    tcsetattr(STDIN_FILENO, TCSANOW, &t);
+        tcgetattr(STDIN_FILENO, &old);
+        t = old;
+        cfmakeraw(&t);
+        tcsetattr(STDIN_FILENO, TCSANOW, &t);
 #ifdef __CYGWIN__
-	}
+    }
 #endif
     if (timeout != 0)
     {
@@ -37,33 +38,36 @@ char *readKey(int timeout)
         c = kthread_exit;
         kthread_exit = 0;
 #else
-	   c = 1;
-	   for (int keyCode = 7; keyCode < 256; ++keyCode) {
-            if (GetAsyncKeyState(keyCode) & 0x8000) {
-				switch (keyCode)
-				{
-					case 40:
-						c = 66;
-						break;
-					case 39:
-						c = 67;
-						break;
-					case 38:
-						c = 65;
-						break;
-					case 37:
-						c = 68;
-						break;
-					case 32:
-						return "space";
-					default:
-						c = (char)(keyCode) + 32;
-						break;
-				}
-				while (GetAsyncKeyState(keyCode) & 0x8000);
-				break;
+        c = 1;
+        for (int keyCode = 7; keyCode < 256; ++keyCode)
+        {
+            if (GetAsyncKeyState(keyCode) & 0x8000)
+            {
+                switch (keyCode)
+                {
+                case 40:
+                    c = 66;
+                    break;
+                case 39:
+                    c = 67;
+                    break;
+                case 38:
+                    c = 65;
+                    break;
+                case 37:
+                    c = 68;
+                    break;
+                case 32:
+                    return "space";
+                default:
+                    c = (char)(keyCode) + 32;
+                    break;
+                }
+                while (GetAsyncKeyState(keyCode) & 0x8000)
+                    ;
+                break;
             }
-       }
+        }
 #endif
     }
     else
@@ -77,20 +81,21 @@ char *readKey(int timeout)
         special = 1;
     if (c == 127)
         special = 1;
-	
+
 #ifdef __CYGWIN__
-	if (timeout == 0) {
-#endif
-    if (c == 27)
+    if (timeout == 0)
     {
-        getc(stdin);
-        c = getc(stdin);
-        special = 1;
-    }
-	tcsetattr(STDIN_FILENO, TCSANOW, &old);
-	
+#endif
+        if (c == 27)
+        {
+            getc(stdin);
+            c = getc(stdin);
+            special = 1;
+        }
+        tcsetattr(STDIN_FILENO, TCSANOW, &old);
+
 #ifdef __CYGWIN__
-	}
+    }
 #endif
     char *str = malloc(128);
 
@@ -232,9 +237,9 @@ void *printMenu(char *title, MenuItem *items, int max, int *sel, Color *defaultC
                 free(strAlloc);
                 break;
             case CHOICE:
-                if (*items[i].value > max - 1)
+                if (*items[i].value > items[i].maxValue - 1)
                 {
-                    *items[i].value = max - 1;
+                    *items[i].value = items[i].maxValue - 1;
                 }
                 else if (*items[i].value < 0)
                 {

@@ -64,7 +64,7 @@ typedef struct
 {
     MenuClass cl;
     char *text;
-    int *value;
+    short *value;
     int maxValue;
     char **choices;
     void *action;
@@ -83,7 +83,7 @@ extern pthread_t bgmThread;
 extern pthread_t kbdThread;
 extern volatile int thread_exit;
 extern volatile int kthread_exit; // keyboard thread
-extern int dummy;
+extern short dummy;
 extern int enableDevMenu;
 
 /**

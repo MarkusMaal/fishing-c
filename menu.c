@@ -521,21 +521,21 @@ void menuTest(int *sel)
             (MenuItem){BUTTON, "Menu item 1", &dummy, -1, NULL, &testItemEntry},
             (MenuItem){BUTTON, "Menu item 2", &dummy, -1, NULL, &testItemEntry},
             (MenuItem){BUTTON, "Menu item 3", &dummy, -1, NULL, &testItemEntry},
-            (MenuItem){CHOICE, "Choice", &menuChoice, 8, (char *[]){
-                                                             "Lolfish",
-                                                             "Crofish",
-                                                             "Friendfish",
-                                                             "Friendly trout",
-                                                             "Crazy Eel",
-                                                             "Big Catfish",
-                                                             "Moony Bass",
-                                                             "Boss Bass",
-                                                         },
+            (MenuItem){CHOICE, "Choice", (short *)&menuChoice, 8, (char *[]){
+                                                                      "Lolfish",
+                                                                      "Crofish",
+                                                                      "Friendfish",
+                                                                      "Friendly trout",
+                                                                      "Crazy Eel",
+                                                                      "Big Catfish",
+                                                                      "Moony Bass",
+                                                                      "Boss Bass",
+                                                                  },
                        NULL},
             (MenuItem){DISABLED_BUTTON, "Disabled menu item", &dummy, -1, NULL, &menuTest},
-            (MenuItem){SELECTOR, "Selector", &selValue, 128, NULL, NULL},
-            (MenuItem){CHECKBOX, "Checkbox item", &cbValue, 2, NULL, &dummyFunc},
-            (MenuItem){SLIDER, "Slider", &sliderValue, 10, NULL, NULL},
+            (MenuItem){SELECTOR, "Selector", (short *)&selValue, 128, NULL, NULL},
+            (MenuItem){CHECKBOX, "Checkbox item", (short *)&cbValue, 2, NULL, &dummyFunc},
+            (MenuItem){SLIDER, "Slider", (short *)&sliderValue, 10, NULL, NULL},
             (MenuItem){BUTTON, "Go back", &dummy, -1, NULL, &ret},
         };
         void (*menuPtr)(int *);
@@ -565,7 +565,7 @@ void devMenu(int *sel)
             (MenuItem){BUTTON, "Variables", &dummy, -1, NULL, &showGlobalVariables},
             (MenuItem){BUTTON, "Keycode viewer", &dummy, -1, NULL, &keycodeTester},
             (MenuItem){BUTTON, "Action test", &dummy, -1, NULL, &actionTester},
-            (MenuItem){BUTTON, "Character test", &dummy, -1, NULL, &testItemEntry},
+            (MenuItem){BUTTON, "Map editor", &dummy, -1, NULL, &editorMenu},
             (MenuItem){BUTTON, "Menu test", &dummy, -1, NULL, &menuTest},
             (MenuItem){BUTTON, "Disable developer menu", &dummy, -1, NULL, &deDev},
             (MenuItem){BUTTON, "Return to main menu", &dummy, -1, NULL, &ret},
@@ -586,7 +586,7 @@ void testItemEntry(int *sel)
 void rootMenu()
 {
 #ifdef __CYGWIN__
-	SetConsoleTitle("Main menu");
+    SetConsoleTitle("Main menu");
 #endif
     int sel = 0;
     while (!ex)
@@ -987,13 +987,13 @@ void customMenu(int *sel)
     {
         mapsLabels[i] = allMaps[i].name;
     }
-    items[0] = (MenuItem){CHOICE, "Environment", &customGame.environmentId, localMapsCount, mapsLabels, &dummyFunc};
-    items[1] = (MenuItem){SELECTOR, "Goal (kg)", &(customGame.goalWeight), 2000, NULL, &dummyFunc};
-    items[2] = (MenuItem){CHECKBOX, "Arcade rules (limited throws, hardcore fishing)", &customGame.arcadeRules, 2, NULL, &dummyFunc};
-    items[3] = (MenuItem){SELECTOR, "Throws", &customGame.throwCount, 63, NULL, &dummyFunc};
+    items[0] = (MenuItem){CHOICE, "Environment", (short *)&customGame.environmentId, localMapsCount, mapsLabels, &dummyFunc};
+    items[1] = (MenuItem){SELECTOR, "Goal (kg)", (short *)&(customGame.goalWeight), 2000, NULL, &dummyFunc};
+    items[2] = (MenuItem){CHECKBOX, "Arcade rules (limited throws, hardcore fishing)", (short *)&customGame.arcadeRules, 2, NULL, &dummyFunc};
+    items[3] = (MenuItem){SELECTOR, "Throws", (short *)&customGame.throwCount, 63, NULL, &dummyFunc};
     for (int i = 4; i < 4 + fishCount; i++)
     {
-        items[4 + (i - 4)] = (MenuItem){CHECKBOX, (fishLabels[i - 4]), &(customGame.fishToggles[i - 4].enabled), 2, NULL, &dummyFunc};
+        items[4 + (i - 4)] = (MenuItem){CHECKBOX, (fishLabels[i - 4]), (short *)&(customGame.fishToggles[i - 4].enabled), 2, NULL, &dummyFunc};
     }
     items[4 + fishCount] = (MenuItem){BUTTON, "Random", &dummy, -1, NULL, &dummyFunc};
     items[5 + fishCount] = (MenuItem){BUTTON, "Start game", &dummy, -1, NULL, &dummyFunc};
@@ -1129,12 +1129,12 @@ void settingsMenu(int *sel)
     last = *sel;
     *sel = 0;
     MenuItem *menu = (MenuItem[]){
-        (MenuItem){CHECKBOX, "Enable music", &profiles[activeProfile].options.music, 2, NULL, &toggleSetting},
-        (MenuItem){CHECKBOX, "Enable SFX", &profiles[activeProfile].options.sfx, 2, NULL, &toggleSetting},
-        (MenuItem){CHECKBOX, "Use autosave", &profiles[activeProfile].options.autosave, 2, NULL, &toggleSetting},
-        (MenuItem){CHECKBOX, "Enable story/instructions", &profiles[activeProfile].options.storytell, 2, NULL, &toggleSetting},
-        (MenuItem){CHOICE, "Difficulty", (int *)&profiles[activeProfile].options.difficulty, profiles[activeProfile].progression.mapUnlocks[0] & 0x04 ? 4 : 3, profiles[activeProfile].progression.mapUnlocks[0] & 0x04 ? (char *[]){"Easy", "Normal", "Hard", "Super Hard"} : (char *[]){"Easy", "Normal", "Hard"}, &ret},
-        (MenuItem){CHOICE, "Rod color", (int *)&profiles[activeProfile].options.rodColor, 14, (char *[]){"Blue", "Green", "Aqua", "Red", "Purple", "Gold", "White", "Gray", "Light blue", "Lime", "Cyan", "Bright red", "Magenta", "Yellow"}, &ret},
+        (MenuItem){CHECKBOX, "Enable music", (short *)&profiles[activeProfile].options.music, 2, NULL, &toggleSetting},
+        (MenuItem){CHECKBOX, "Enable SFX", (short *)&profiles[activeProfile].options.sfx, 2, NULL, &toggleSetting},
+        (MenuItem){CHECKBOX, "Use autosave", (short *)&profiles[activeProfile].options.autosave, 2, NULL, &toggleSetting},
+        (MenuItem){CHECKBOX, "Enable story/instructions", (short *)&profiles[activeProfile].options.storytell, 2, NULL, &toggleSetting},
+        (MenuItem){CHOICE, "Difficulty", (short *)&profiles[activeProfile].options.difficulty, profiles[activeProfile].progression.mapUnlocks[0] & 0x04 ? 4 : 3, profiles[activeProfile].progression.mapUnlocks[0] & 0x04 ? (char *[]){"Easy", "Normal", "Hard", "Super Hard"} : (char *[]){"Easy", "Normal", "Hard"}, &ret},
+        (MenuItem){CHOICE, "Rod color", (short *)&profiles[activeProfile].options.rodColor, 14, (char *[]){"Blue", "Green", "Aqua", "Red", "Purple", "Gold", "White", "Gray", "Light blue", "Lime", "Cyan", "Bright red", "Magenta", "Yellow"}, &ret},
         (MenuItem){BUTTON, "Change name", &dummy, -1, NULL, &nameEntry},
         (MenuItem){BUTTON, "Save profile", &dummy, -1, NULL, &saveActiveProfile},
         (MenuItem){BUTTON, "Delete profile", &dummy, -1, NULL, &delProfile},
@@ -1164,8 +1164,8 @@ int fishingMenu(char *title, int *defaults, void *fCast, void *fLore, void *fExi
         MenuItem menu[8] =
             {
                 (MenuItem){fCast == &dummyFunc ? DISABLED_BUTTON : BUTTON, "Cast", &dummy, -1, NULL, fCast},
-                (MenuItem){SELECTOR, "Distance", defaults, 20, NULL, NULL},
-                (MenuItem){SELECTOR, "Angle", &defaults[1], 20, NULL, NULL},
+                (MenuItem){SELECTOR, "Distance", (short *)defaults, 20, NULL, NULL},
+                (MenuItem){SELECTOR, "Angle", (short *)&defaults[1], 20, NULL, NULL},
                 (MenuItem){profiles[activeProfile].progression.mode != CUSTOM ? BUTTON : DISABLED_BUTTON, "Save game", &dummy, -1, NULL, &saveActiveProfile},
                 (MenuItem){fLore == &dummyFunc ? DISABLED_BUTTON : BUTTON, "Lore", &dummy, -1, NULL, fLore},
                 (MenuItem){BUTTON, "Scouting map", &dummy, -1, NULL, &dummyFunc},
