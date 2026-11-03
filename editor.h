@@ -4,6 +4,7 @@
 #include "utils.h"
 
 void editorMenu();
+void testMap();
 void editorSaveMap();
 void editorDrawLayout();
 void editorEditWater();

@@ -5,22 +5,43 @@ void editorMenu()
     if (loadMap("dev.map"))
         playSound("snd/load.mp3", false);
     int sel = 0;
-    MenuItem menuItems[6] = {
+    MenuItem menuItems[7] = {
         (MenuItem){BUTTON, "Map layout", &dummy, -1, NULL, &editorLayoutMenu},
         (MenuItem){BUTTON, "Objectives", &dummy, -1, NULL, &editorGoalMenu},
         (MenuItem){BUTTON, "Edit text", &dummy, -1, NULL, &editorTextMenu},
         (MenuItem){BUTTON, "Fish spawn rules", &dummy, -1, NULL, &editorSpawnMenu},
         (MenuItem){BUTTON, "Save map", &dummy, -1, NULL, &editorSaveMap},
+        (MenuItem){BUTTON, "Test map", &dummy, -1, NULL, &testMap},
         (MenuItem){BUTTON, "Exit editor", &dummy, -1, NULL, &dummyFunc},
     };
     for (;;)
     {
         void (*menuPtr)(int *);
-        menuPtr = printMenu("Map editor", menuItems, 6, &sel, (Color[]){BLACK, WHITE});
-        if (sel == 5)
+        menuPtr = printMenu("Map editor", menuItems, 7, &sel, (Color[]){BLACK, WHITE});
+        if (sel == 6)
             break;
         menuPtr(&sel);
     }
+}
+
+void testMap()
+{
+    int backup = profiles[activeProfile].options.autosave;
+    profiles[activeProfile].options.autosave = false;
+    stopSound();
+    char buf[64];
+    snprintf(buf, 64, "snd/%s", mapMusic.filename[0]);
+    playSound(buf, true);
+    mapLoop(-1);
+    chcolor((Color[]){BLACK, WHITE});
+    for (int i = 0; i < 100; i++)
+    {
+        printf("%-100s", "");
+    }
+    locate(0, 0);
+    stopSound();
+    playSound("snd/menu_bg.mp3", true);
+    profiles[activeProfile].options.autosave = backup;
 }
 
 void editorSaveMap()
@@ -88,9 +109,9 @@ void editorSaveMap()
         goto saveErr;
     fseek(dMapFile, 8, SEEK_CUR);
 
-    if (fwrite(&mapFish.header, sizeof(Record), 1, dMapFile) <= 0)
+    if (fwrite(&mapMessage.header, sizeof(Record), 1, dMapFile) <= 0)
         goto saveErr;
-    if (fwrite(&mapFish.messages, mapFish.header.chunkSize * mapFish.header.chunkCount, 1, dMapFile) <= 0)
+    if (fwrite(&mapMessage.messages, mapMessage.header.chunkSize * mapMessage.header.chunkCount, 1, dMapFile) <= 0)
         goto saveErr;
 
     if (fwrite(&mapSpawn.header, sizeof(Record), 1, dMapFile) <= 0)
@@ -140,7 +161,7 @@ void editorEditBlock(int *selectedBlock)
 {
     char **colorChoices = (char *[]){"Black", "Red", "Green", "Yellow", "Blue", "Magenta", "Cyan", "White", "Gray", "Light red", "Light green", "Light yellow", "Light blue", "Light magenta", "Light cyan", "Bright white"};
     MenuItem menuItems[3] = {
-        (MenuItem){CHOICE, "Color", &mapLayout.chunks[*selectedBlock].color, 15, colorChoices, &dummyFunc},
+        (MenuItem){CHOICE, "Color", &mapLayout.chunks[*selectedBlock].color, 16, colorChoices, &dummyFunc},
         (MenuItem){SELECTOR, "Repeat count", (short *)&mapLayout.chunks[*selectedBlock].count, 32767, NULL, &dummyFunc},
         (MenuItem){BUTTON, "Return to previous menu", &dummy, -1, NULL, &dummyFunc},
     };
@@ -186,8 +207,8 @@ void editorLayoutMenu(int *sel)
         (MenuItem){SELECTOR, "Boat Y", (short *)&mapBoat.y, 255, NULL, &dummyFunc},
         (MenuItem){BUTTON, "Edit block", &dummy, -1, NULL, &editorEditBlock},
         (MenuItem){BUTTON, "Edit water", &dummy, -1, NULL, &editorEditWater},
-        (MenuItem){CHOICE, "Background color", &mapColor.bg, 15, colorChoices, &dummyFunc},
-        (MenuItem){CHOICE, "Foreground color", &mapColor.fg, 15, colorChoices, &dummyFunc},
+        (MenuItem){CHOICE, "Background color", &mapColor.bg, 16, colorChoices, &dummyFunc},
+        (MenuItem){CHOICE, "Foreground color", &mapColor.fg, 16, colorChoices, &dummyFunc},
         (MenuItem){BUTTON, "Preview", &dummy, -1, NULL, &editorDrawLayout},
         (MenuItem){BUTTON, "Return to previous menu", &dummy, -1, NULL, &dummyFunc},
     };
@@ -271,8 +292,8 @@ void editorStatusTextMenu(int *sel, int idx)
         (MenuItem){CHOICE, "Message type", (short *)&mapStatus.messages[idx].idx, 5, choices, &dummyFunc},
         (MenuItem){SELECTOR, "Position X", (short *)&mapStatus.messages[idx].x, 32767, NULL, &dummyFunc},
         (MenuItem){SELECTOR, "Position Y", (short *)&mapStatus.messages[idx].y, 32767, NULL, &dummyFunc},
-        (MenuItem){CHOICE, "Background color", &mapStatus.messages[idx].bg, 15, colorChoices, &dummyFunc},
-        (MenuItem){CHOICE, "Foreground color", &mapStatus.messages[idx].fg, 15, colorChoices, &dummyFunc},
+        (MenuItem){CHOICE, "Background color", &mapStatus.messages[idx].bg, 16, colorChoices, &dummyFunc},
+        (MenuItem){CHOICE, "Foreground color", &mapStatus.messages[idx].fg, 16, colorChoices, &dummyFunc},
         (MenuItem){BUTTON, "Edit text", &dummy, -1, NULL, &dummyFunc},
         (MenuItem){BUTTON, "Go back", &dummy, -1, NULL, &dummyFunc},
     };
