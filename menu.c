@@ -820,16 +820,17 @@ void playMap(int *sel)
             clearScreen();
             printf("\nFishing C > You win!\n\nCongratulations!\n\n");
             printf("You have finished the %s!\n\nTotal fish: %.2f kg\nAverage luck: %d%%\nCoverage: %d%%\n\n", mapTitle.name, (float)profiles[activeProfile].progression.weight / 1000.0f, profiles[activeProfile].progression.totalLuck / profiles[activeProfile].progression.throws, coveragePerc);
-            if (!profiles[activeProfile].progression.mapUnlocks[mapsList[*sel].idx] & 0x01)
+            if (!(profiles[activeProfile].progression.mapUnlocks[mapsList[selMap].idx] & 0x01))
             {
-                if (!mapsList[*sel + 1].secret)
+
+                if (!mapsList[selMap + 1].secret)
                 {
                     printf("New stage unlocked!\n\nTo play this stage, go to start in the main menu and\nselect it.\n\n");
                 }
                 profiles[activeProfile]
-                    .progression.mapUnlocks[mapsList[*sel].idx] = profiles[activeProfile]
-                                                                      .progression.mapUnlocks[mapsList[*sel].idx] |
-                                                                  1;
+                    .progression.mapUnlocks[mapsList[selMap].idx] = profiles[activeProfile]
+                                                                        .progression.mapUnlocks[mapsList[selMap].idx] |
+                                                                    1;
             }
             printf("Press any key to continue . . . ");
             readKey(false);
