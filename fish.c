@@ -75,8 +75,8 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
     int weight = (float)luck / 100.0f * (fish.weightMax - fish.weightMin) + fish.weightMin;
     int length = (float)luck / 100.0f * (fish.lengthMax - fish.lengthMin) + fish.lengthMin;
     int life = fish.tolerance;
-    char *llastKey = malloc(0x10);
-    char *lastKey = malloc(0x10);
+    char *llastKey;
+    char *lastKey;
     char lastKeyId = 0;
     char llastKeyId = 0;
     char pad[fishX + 1];
@@ -180,7 +180,7 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
             usleep(66667);
             goto skipread;
         }
-        char *rKey = "1";
+        char *rKey;
         unsigned long start_time = clock();
         if (profiles[activeProfile].progression.mode == DEMO)
             sleep(1);
@@ -244,9 +244,6 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
             break;
         }
     skipread:
-        if (rKey != NULL)
-            free(rKey);
-        rKey = NULL;
         if (life <= 0)
         {
             playSound("snd/negative.mp3", false);
@@ -276,7 +273,6 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
                     break;
                 usleep(66667);
             }
-            // free(lastKey);
             clearScreen();
             printf("\n\n    Oh no\n    you lost the fish!\n\n\n");
             printf("Press RETURN to continue . . . ");
@@ -300,9 +296,6 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
         llastKey = lastKey;
         lastKey = rKey;
     }
-    if (llastKey != NULL)
-        free(llastKey);
-    llastKey = NULL;
     clearScreen();
     playSound("snd/positive.mp3", false);
     locate(0, 0);
@@ -314,7 +307,12 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
         printf((char *)fish.geometry[3][i], weight, length);
     }
     printf("\n");
+    char *backup = malloc(strlen(profiles[activeProfile].progression.mapName) + 1);
+    strcpy(backup, profiles[activeProfile].progression.mapName);
+    strcpy(profiles[activeProfile].progression.mapName, "menu");
     LivewellData fishMeta = loadFishMeta(fileName);
+    strcpy(profiles[activeProfile].progression.mapName, backup);
+    free(backup);
     if (strcmp(fishMeta.name, "MISSINGNAME") != 0 && profiles[activeProfile].progression.mode != ARCADE)
     {
         updateLivewell(fileName, fishMeta.name, weight * (fish.largeUnits ? 1000 : 1), length);
@@ -326,8 +324,5 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
     if (profiles[activeProfile].progression.mode == DEMO)
         sleep(1);
     clearScreen();
-    if (lastKey != NULL)
-        free(lastKey);
-    lastKey = NULL;
     return (int[]){weight, length};
 }

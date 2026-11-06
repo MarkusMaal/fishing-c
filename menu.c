@@ -245,7 +245,9 @@ void testFishBattle()
         return;
     buff[strlen(buff) - 1] = '\0'; // remove newline
     FishData fish = loadFish(buff);
+    strcpy(profiles[activeProfile].progression.mapName, "test");
     int *results = fightFish(fish, 100, (PlayerDifficulty)profiles[activeProfile].options.difficulty, buff);
+    strcpy(profiles[activeProfile].progression.mapName, "menu");
     clearScreen();
 
     printf("\nResults:\n\nWeight: %d g\nSize: %d cm\n\nPress any key to continue . . . ", fish.largeUnits ? *results * 1000 : *results, results[1]);
