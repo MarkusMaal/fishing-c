@@ -194,6 +194,7 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
                 if ((clock() - start_time) / CLOCKS_PER_SEC * 1000 > (unsigned long)(2000 - (int)profiles[activeProfile].options.difficulty * 500))
                     break;
                 fflush(stdout);
+                free(rKey); // since we are looping, this memory will not be freed normally, so we have to do it here every time
             }
         }
         else if (rand() % 4 == 1)
@@ -243,6 +244,9 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
             break;
         }
     skipread:
+        if (rKey != NULL)
+            free(rKey);
+        rKey = NULL;
         if (life <= 0)
         {
             playSound("snd/negative.mp3", false);
@@ -296,6 +300,9 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
         llastKey = lastKey;
         lastKey = rKey;
     }
+    if (llastKey != NULL)
+        free(llastKey);
+    llastKey = NULL;
     clearScreen();
     playSound("snd/positive.mp3", false);
     locate(0, 0);
@@ -319,5 +326,8 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
     if (profiles[activeProfile].progression.mode == DEMO)
         sleep(1);
     clearScreen();
+    if (lastKey != NULL)
+        free(lastKey);
+    lastKey = NULL;
     return (int[]){weight, length};
 }

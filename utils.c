@@ -33,8 +33,9 @@ char *readKey(int timeout)
 #ifndef __CYGWIN__
         kthread_exit = 1;
         pthread_create(&kbdThread, NULL, waitKey, NULL);
-        usleep(1);
+        usleep(10);
         pthread_cancel(kbdThread);
+        pthread_join(kbdThread, NULL);
         c = kthread_exit;
         kthread_exit = 0;
 #else

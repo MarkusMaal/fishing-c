@@ -3,7 +3,7 @@
 int main()
 {
 #ifdef __CYGWIN__
-	SetConsoleTitle("Fishing");
+    SetConsoleTitle("Fishing");
 #endif
     char *initStr = "Initializing...";
     printf(initStr);
@@ -74,7 +74,7 @@ void splashScreen()
 void titleScreen()
 {
     FishData *fsh = malloc(sizeof(FishData));
-	unsigned long time = 0;
+    unsigned long time = 0;
     for (long unsigned int i = 0; i < sizeof(FishData); i++)
         ((char *)fsh)[i] = 0;
     *fsh = loadFish(rand() % 100 == 2 ? "fsh/lama.fsh" : "fsh/friendlytrout.fsh");
@@ -110,10 +110,11 @@ void titleScreen()
 #ifdef __CYGWIN__
         if (strcmp(rKey, "space") == 0 || strcmp(rKey, "32") == 0)
             break;
-        #else
+#else
         if (strcmp(rKey, "1") != 0 && strcmp(rKey, "-1") != 0) // fix for terminals the may spam -1 here (idk why), so ignore those inputs as well
             break;
 #endif
+        free(rKey);
 #ifdef __CYGWIN__
         if (time > 30000)
 #else
