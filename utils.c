@@ -309,6 +309,7 @@ void *printMenu(char *title, MenuItem *items, int max, int *sel, Color *defaultC
             playSound("snd/submenu.mp3", 0);
             *sel = lSel;
             free(bar);
+            free(keysPressed);
             return items[lSel].action;
         }
         else if ((strcmp(key, "return") == 0) && items[lSel].cl == DISABLED_BUTTON)
@@ -457,31 +458,6 @@ void getMaps()
 void locate(int row, int col)
 {
     printf("\033[%d;%dH", row, col);
-}
-
-char *strrpl(char *str, char *find, char *replace)
-{
-    int i;
-    char *pt = strstr(str, find);
-    char *firstStr;
-    if (pt == NULL)
-    {
-        printf("cannot find string \n");
-        return NULL;
-    }
-
-    firstStr = (char *)malloc(100 * sizeof(char));
-
-    // copy just until i find what i need to replace
-    // i tried to specify the length of firstStr just with pt - str
-
-    strncpy(firstStr, str, strlen(str) - strlen(pt));
-    strcat(firstStr, replace);
-    strcat(firstStr, pt + strlen(find));
-
-    for (i = 0; i < (int)strlen(firstStr); i++)
-        str[i] = firstStr[i];
-    return str;
 }
 
 unsigned int crc32(const char *dataPtr, size_t dataSize)

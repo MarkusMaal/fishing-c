@@ -74,6 +74,7 @@ void devLoadMap(int *sel)
     strcpy(mapsList[*sel].file, backup);
     strcpy(mapsList[*sel].name, nameBackup);
     free(backup);
+    free(nameBackup);
 }
 
 void livewellMenu(int *sel)
@@ -187,6 +188,7 @@ void livewellMenu(int *sel)
     }
     locate(0, 0);
     free(lwd);
+    free(fsh);
     unloadMap();
     playSound("snd/menu_bg.mp3", true);
 }
@@ -1027,6 +1029,8 @@ void customMenu(int *sel)
             customGame.arcadeRules = rand() % 2;
         }
     }
+    for (int i = 0; i < fishCount; i++)
+        free(fishLabels[i]);
 }
 
 void startMenu(int *sel)
@@ -1055,9 +1059,7 @@ void startMenu(int *sel)
             }
             if (!mapsList[i].secret || profiles[activeProfile].progression.solmn == READY)
             {
-                char *nameBuf = malloc(32);
-                strcpy(nameBuf, mapsList[i].name);
-                menu[i] = (MenuItem){(unlock || mapsList[i].secret) ? BUTTON : DISABLED_BUTTON, unlock ? nameBuf : "Locked", &dummy, -1, NULL, &playMap};
+                menu[i] = (MenuItem){(unlock || mapsList[i].secret) ? BUTTON : DISABLED_BUTTON, unlock ? mapsList[i].name : "Locked", &dummy, -1, NULL, &playMap};
             }
         }
         menu[mapsCount - (profiles[activeProfile].progression.solmn != READY)] = (MenuItem){BUTTON, "Go back", &dummy, -1, NULL, &ret};

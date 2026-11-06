@@ -183,7 +183,10 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
         char *rKey;
         unsigned long start_time = clock();
         if (profiles[activeProfile].progression.mode == DEMO)
+        {
+            rKey = "1";
             sleep(1);
+        }
         if (profiles[activeProfile].progression.mode != DEMO)
         {
             while (true)
@@ -307,15 +310,18 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
         printf((char *)fish.geometry[3][i], weight, length);
     }
     printf("\n");
-    char *backup = malloc(strlen(profiles[activeProfile].progression.mapName) + 1);
-    strcpy(backup, profiles[activeProfile].progression.mapName);
-    strcpy(profiles[activeProfile].progression.mapName, "menu");
-    LivewellData fishMeta = loadFishMeta(fileName);
-    strcpy(profiles[activeProfile].progression.mapName, backup);
-    free(backup);
-    if (strcmp(fishMeta.name, "MISSINGNAME") != 0 && profiles[activeProfile].progression.mode != ARCADE)
+    if (profiles[activeProfile].progression.mode != DEMO)
     {
-        updateLivewell(fileName, fishMeta.name, weight * (fish.largeUnits ? 1000 : 1), length);
+        char *backup = malloc(strlen(profiles[activeProfile].progression.mapName) + 1);
+        strcpy(backup, profiles[activeProfile].progression.mapName);
+        strcpy(profiles[activeProfile].progression.mapName, "menu");
+        LivewellData fishMeta = loadFishMeta(fileName);
+        strcpy(profiles[activeProfile].progression.mapName, backup);
+        free(backup);
+        if (strcmp(fishMeta.name, "MISSINGNAME") != 0 && profiles[activeProfile].progression.mode != ARCADE)
+        {
+            updateLivewell(fileName, fishMeta.name, weight * (fish.largeUnits ? 1000 : 1), length);
+        }
     }
     printf("Press RETURN continue . . . ");
     while (profiles[activeProfile].progression.mode != DEMO && strcmp(readKey(false), "return") != 0)

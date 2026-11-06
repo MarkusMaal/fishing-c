@@ -487,4 +487,5 @@ void editorSpawnMenu(int *sel)
             break;
         }
     }
+    free(fishIdx);
 }
