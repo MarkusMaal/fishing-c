@@ -1184,18 +1184,6 @@ int fishingMenu(char *title, int *defaults, void *fCast, void *fLore, void *fExi
         menuPtr = printMenu(title, menu, exitIdx + 1 + (profiles[activeProfile].progression.mode == STORY ? 1 : 0), &sel, colors);
         if (sel == scoutIdx)
         {
-            profiles[activeProfile].progression.weight = profiles[activeProfile].progression.goalWeight;
-            if (mapGoal.type == TARGET)
-            {
-                for (unsigned int i = 0; i < mapGoal.variation; i++)
-                {
-                    profiles[activeProfile].progression.targets[i] = 0xFF;
-                }
-            }
-            strcpy(profiles[activeProfile].progression.mapName, "win");
-            menuPtr = fCast;
-            menuPtr(defaults);
-            break;
             clearScreen();
             char *labels = "0123456789ABCDEFGHIJ";
             printf("DA%s\n", labels);
