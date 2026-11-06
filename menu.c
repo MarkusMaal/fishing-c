@@ -1041,24 +1041,23 @@ void startMenu(int *sel)
     *sel = 0;
     MenuItem menu[mapsCount + (profiles[activeProfile].progression.solmn == READY)];
     profiles[activeProfile].progression.mode = STORY;
-    for (int i = 0; i < mapsCount; i++)
-    {
-        char unlock = true;
-        if (i > 0)
-        {
-            unlock = profiles[activeProfile].progression.mapUnlocks[i - 1] & 0x01;
-        }
-        if (!mapsList[i].secret || profiles[activeProfile].progression.solmn == READY)
-        {
-            char *nameBuf = malloc(32);
-            strcpy(nameBuf, mapsList[i].name);
-            menu[i] = (MenuItem){(unlock || mapsList[i].secret) ? BUTTON : DISABLED_BUTTON, unlock ? nameBuf : "Locked", &dummy, -1, NULL, &playMap};
-        }
-    }
-    menu[mapsCount - (profiles[activeProfile].progression.solmn != READY)] = (MenuItem){BUTTON, "Go back", &dummy, -1, NULL, &ret};
     while (ex < checkEx)
     {
-
+        for (int i = 0; i < mapsCount; i++)
+        {
+            char unlock = true;
+            if (i > 0)
+            {
+                unlock = profiles[activeProfile].progression.mapUnlocks[i - 1] & 0x01;
+            }
+            if (!mapsList[i].secret || profiles[activeProfile].progression.solmn == READY)
+            {
+                char *nameBuf = malloc(32);
+                strcpy(nameBuf, mapsList[i].name);
+                menu[i] = (MenuItem){(unlock || mapsList[i].secret) ? BUTTON : DISABLED_BUTTON, unlock ? nameBuf : "Locked", &dummy, -1, NULL, &playMap};
+            }
+        }
+        menu[mapsCount - (profiles[activeProfile].progression.solmn != READY)] = (MenuItem){BUTTON, "Go back", &dummy, -1, NULL, &ret};
         if (profiles[activeProfile].progression.playing == -2)
         {
             ret(sel);
@@ -1185,6 +1184,18 @@ int fishingMenu(char *title, int *defaults, void *fCast, void *fLore, void *fExi
         menuPtr = printMenu(title, menu, exitIdx + 1 + (profiles[activeProfile].progression.mode == STORY ? 1 : 0), &sel, colors);
         if (sel == scoutIdx)
         {
+            profiles[activeProfile].progression.weight = profiles[activeProfile].progression.goalWeight;
+            if (mapGoal.type == TARGET)
+            {
+                for (unsigned int i = 0; i < mapGoal.variation; i++)
+                {
+                    profiles[activeProfile].progression.targets[i] = 0xFF;
+                }
+            }
+            strcpy(profiles[activeProfile].progression.mapName, "win");
+            menuPtr = fCast;
+            menuPtr(defaults);
+            break;
             clearScreen();
             char *labels = "0123456789ABCDEFGHIJ";
             printf("DA%s\n", labels);
