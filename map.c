@@ -331,6 +331,7 @@ void drawMap(int dx, int dy)
 
 void mapLoop(int mapId)
 {
+    playerStats[activeProfile].mapPlayCnt[mapId]++;
     int maxThrows = profiles[activeProfile].maxThrows;
     if (profiles[activeProfile].progression.playing == -1)
     {
@@ -523,6 +524,7 @@ void loreDisplay()
 
 void cast(int *values)
 {
+    playerStats[activeProfile].throwCount++;
     for (int i = 0; i < 999; i++)
     {
         cprintf("   ", (Color[]){BLUE, WHITE, BLUE, WHITE});
@@ -537,6 +539,7 @@ void cast(int *values)
     profiles[activeProfile].progression.totalLuck += luck;
     if (luck > 100)
         luck = 100;
+    playerStats[activeProfile].totalLuck += luck;
     int spotId = tx + ty * 20;
     drawMap(tx, ty);
     if (mapGoal.type == BOSS)
@@ -576,6 +579,7 @@ void cast(int *values)
                         stopSound();
                         snprintf(buf, 32, "snd/%s", mapMusic.filename[1]);
                         playSound(buf, true); // why do I hear boss music?
+                        playerStats[activeProfile].biteCount++;
                         int *result = fightFish(fish, luck, (PlayerDifficulty)profiles[activeProfile].options.difficulty, buf);
                         stopSound();
                         if (*result != 0)
@@ -591,11 +595,13 @@ void cast(int *values)
                         }
                     }
                 }
+                playerStats[activeProfile].lostFishCnt++;
             }
             if (!playedPopSound && luck > 70)
             {
                 playedPopSound = true;
                 playSound("snd/pop.mp3", false);
+                playerStats[activeProfile].popCount++;
             }
             roll = rand() % 256;
             if ((strcmp(mapFish.messages[(int)mapSpawn.entries[spotId]], "boot") == 0) && (luck > 50))
@@ -641,6 +647,7 @@ void cast(int *values)
                     printf(mapStatus.messages[2].msg, mapMessage.messages[3]);
                     fflush(stdout);
                     sleep((int)((100.0 - (float)luck) / 100.0f) * rand() % 20 + 1);
+                    playerStats[activeProfile].lostFishCnt++;
                     continue;
                 }
 
@@ -659,6 +666,7 @@ void cast(int *values)
                     clearScreen();
                 }
                 locate(0, 0);
+                playerStats[activeProfile].biteCount++;
                 int *result = fightFish(fish, luck, (PlayerDifficulty)profiles[activeProfile].options.difficulty, buf);
                 if (*result != 0)
                 {
@@ -688,6 +696,7 @@ void cast(int *values)
             {
                 playSound("snd/crickets.mp3", false);
                 playedCricketSound = true;
+                playerStats[activeProfile].cricketCount++;
                 // printf("[DEBUG] Unlucky at %d\n", spotId);
             }
             fflush(stdout);
@@ -725,6 +734,7 @@ void unloadMap()
             for (int j = 0; j < 7; j++)
                 printf("\n");
             printf("                               G A M E   O V E R");
+            playerStats[activeProfile].stageLoseCount++;
             if (i == 2)
             {
                 playSound("snd/error.mp3", false);

@@ -2,6 +2,7 @@
 
 PlayerProfile profiles[8];
 int activeProfile = 0;
+unsigned long currentTime = 0;
 
 ProfileHeader quickLoadProfile(int idx)
 {
@@ -28,6 +29,7 @@ ProfileHeader quickLoadProfile(int idx)
 
 int loadProfile(int idx)
 {
+    currentTime = clock();
     char buf[32];
     snprintf(buf, 32, "save/profile%d.dat", idx + 1);
     FILE *infile;
@@ -59,10 +61,14 @@ int loadProfile(int idx)
     profiles[activeProfile].profileHeader.saveDate[0x1F] = 0;
     profiles[activeProfile].profileHeader.saveTime[0x1F] = 0;
     profiles[activeProfile].options.name[0x1F] = 0;
+    loadStats(activeProfile);
     return 0;
 }
 void saveProfile(PlayerProfile profile, int idx)
 {
+    playerStats[activeProfile].saveCount++;
+    playerStats[activeProfile].playTime += (clock() - currentTime);
+    currentTime = clock();
     time_t now = time(NULL);        // Get current time
     struct tm *t = localtime(&now); // Convert to local time structure
     for (int i = 0; i < 0x20; i++)
@@ -114,6 +120,7 @@ void saveProfile(PlayerProfile profile, int idx)
     }
     fwrite(&profile, sizeof(PlayerProfile), 1, outfile);
     fclose(outfile);
+    saveStats(activeProfile);
     playSound("snd/save.mp3", false);
 }
 
@@ -180,12 +187,13 @@ void initProfile(int idx)
         profiles[idx].options.music = false;
         profiles[idx].options.sfx = false;
     }
+    initStats(activeProfile);
 }
 
 void profileMenu()
 {
 #ifdef __CYGWIN__
-	SetConsoleTitle("Profiles");
+    SetConsoleTitle("Profiles");
 #endif
     int sel = 0;
     ProfileHeader *headers = malloc(sizeof(ProfileHeader) * 4);
@@ -298,6 +306,12 @@ void updateLivewell(char *fish, char *friendlyname, int weight, int length)
     profiles[activeProfile].livewell[lcount].bestLength = length;
     strcpy(profiles[activeProfile].livewell[lcount].fish, fish);
     printf("This is your first %s, congratulations!\n\n", friendlyname);
+}
+
+void showStatsForActiveProfile()
+{
+    clearScreen();
+    displayStats(activeProfile);
 }
 
 char *getObString(int idx)

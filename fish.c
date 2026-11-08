@@ -204,6 +204,7 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
         {
             goto skipread;
         }
+        int lastLife = life;
         switch (requestedInput)
         {
         case ANY:
@@ -246,6 +247,10 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
                 life--;
             break;
         }
+        if (life < lastLife)
+            playerStats[activeProfile].wrongInputs++;
+        else
+            playerStats[activeProfile].correctInputs++;
     skipread:
         if (life <= 0)
         {
@@ -276,6 +281,8 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
                     break;
                 usleep(66667);
             }
+            playerStats[activeProfile].lostFishCnt++;
+            playerStats[activeProfile].lostFights++;
             clearScreen();
             printf("\n\n    Oh no\n    you lost the fish!\n\n\n");
             printf("Press RETURN to continue . . . ");
@@ -304,6 +311,12 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
     locate(0, 0);
     printf("         \n\n   You got a\n    fish!!!\n\n\n\n");
     usleep(1200000);
+    playerStats[activeProfile].caughtFishCnt++;
+    if (length > 0 && (playerStats[activeProfile].longestFish < (unsigned int)length))
+        playerStats[activeProfile].longestFish = length;
+    if (weight > 0 && (playerStats[activeProfile].heaviestFish < (unsigned int)weight * (fish.largeUnits ? 1000 : 1)))
+        playerStats[activeProfile].heaviestFish = weight * (fish.largeUnits ? 1000 : 1);
+    playerStats[activeProfile].totalWeight += weight * (fish.largeUnits ? 1000 : 1);
     clearScreen();
     for (int i = 0; i < 0x10; i++)
     {
@@ -321,6 +334,8 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
         if (strcmp(fishMeta.name, "MISSINGNAME") != 0 && profiles[activeProfile].progression.mode != ARCADE)
         {
             updateLivewell(fileName, fishMeta.name, weight * (fish.largeUnits ? 1000 : 1), length);
+            if (strcmp(fishMeta.name, "MISSINGNAME") == 0)
+                playerStats[activeProfile].bootCount++;
         }
     }
     printf("Press RETURN continue . . . ");

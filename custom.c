@@ -119,6 +119,7 @@ void cmLoader(CustomStage cust, char *map, char *environment)
         printf("\nFishing C > You win!\n\nCongratulations!\n\n");
         printf("You have finished a custom game at the %s!\n\nTotal fish: %.2f kg\nAverage luck: %d%%\nCoverage: %d%%\n\n", mapTitle.name, (float)profiles[activeProfile].progression.weight / 1000.0f, profiles[activeProfile].progression.totalLuck / profiles[activeProfile].progression.throws, coveragePerc);
         printf("Press any key to continue . . . ");
+        playerStats[activeProfile].stageWinCount++;
         readKey(false);
     }
     stopSound();

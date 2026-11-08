@@ -647,6 +647,7 @@ void rootMenu()
             (MenuItem){BUTTON, "Custom game", &dummy, -1, NULL, &customMenu},
             (MenuItem){BUTTON, "Change profile", &dummy, -1, NULL, &profileMenu},
             (MenuItem){BUTTON, "Settings", &dummy, -1, NULL, &settingsMenu},
+            (MenuItem){BUTTON, "Statistics", &dummy, -1, NULL, &showStatsForActiveProfile},
             (MenuItem){BUTTON, "Livewell", &dummy, -1, NULL, &livewellMenu},
             (MenuItem){BUTTON, "Exit", &dummy, -1, NULL, &ret},
             (MenuItem){BUTTON, "Developer", &dummy, -1, NULL, &devMenu},
@@ -655,13 +656,13 @@ void rootMenu()
         };
         if (profiles[activeProfile].progression.mapUnlocks[0] & 0x08)
         {
-            memcpy(&menu[7], &menu[6], 3);
-            menu[6] = (MenuItem){BUTTON, "Credits", &dummy, -1, NULL, &credits};
-            menu[7] = (MenuItem){BUTTON, "Developer", &dummy, -1, NULL, &devMenu};
+            memcpy(&menu[8], &menu[7], 3);
+            menu[7] = (MenuItem){BUTTON, "Credits", &dummy, -1, NULL, &credits};
+            menu[8] = (MenuItem){BUTTON, "Developer", &dummy, -1, NULL, &devMenu};
         }
         void (*menuPtr)(int *);
         // void (*nargPtr)();
-        menuPtr = printMenu("Fishing C > Main menu", menu, (enableDevMenu ? 7 : 6) + (profiles[activeProfile].progression.mapUnlocks[0] & 0x08 ? 1 : 0), &sel, (Color[]){BLACK, WHITE});
+        menuPtr = printMenu("Fishing C > Main menu", menu, (enableDevMenu ? 8 : 7) + (profiles[activeProfile].progression.mapUnlocks[0] & 0x08 ? 1 : 0), &sel, (Color[]){BLACK, WHITE});
         menuPtr(&sel);
         /*if (sel == 1)
         {
@@ -824,6 +825,7 @@ void playMap(int *sel)
             clearScreen();
             printf("\nFishing C > You win!\n\nCongratulations!\n\n");
             printf("You have finished the %s!\n\nTotal fish: %.2f kg\nAverage luck: %d%%\nCoverage: %d%%\n\n", mapTitle.name, (float)profiles[activeProfile].progression.weight / 1000.0f, profiles[activeProfile].progression.totalLuck / profiles[activeProfile].progression.throws, coveragePerc);
+            playerStats[activeProfile].stageWinCount++;
             if (!(profiles[activeProfile].progression.mapUnlocks[mapsList[selMap].idx] & 0x01))
             {
 
@@ -1094,6 +1096,9 @@ void confirmDeleteProfile(int *sel)
     char buf[32];
     snprintf(buf, 32, "save/profile%d.dat", activeProfile + 1);
     remove(buf);
+    snprintf(buf, 32, "save/stats%d.dat", activeProfile + 1);
+    if (access(buf, F_OK) == 0)
+        remove(buf);
     ret(sel);
     profileMenu();
     ret(sel);

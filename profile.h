@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "menu.h"
 #include "score.h"
+#include "stats.h"
 #include <time.h>
 #include <dirent.h>
 #include <errno.h>
@@ -105,6 +106,7 @@ typedef struct
 
 extern PlayerProfile profiles[8];
 extern int activeProfile;
+extern unsigned long currentTime;
 
 ProfileHeader quickLoadProfile(int idx);
 int loadProfile(int idx);
@@ -114,5 +116,6 @@ void saveActiveProfile();
 void profileMenu();
 char *getObString(int idx);
 void updateLivewell(char *fish, char *friendlyname, int weight, int length);
+void showStatsForActiveProfile();
 
 #endif
