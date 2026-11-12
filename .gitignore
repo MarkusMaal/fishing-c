@@ -1,5 +1,8 @@
 save/*.dat
 save/*.dat.bak
+save/*.save
+save/*.cmd
+save.bak
 .vscode
 fishingc
 fishingc.exe
