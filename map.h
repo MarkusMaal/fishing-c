@@ -32,6 +32,13 @@ typedef struct
 
 typedef enum
 {
+    SPOON,
+    WORM,
+    METALJIG
+} Bait;
+
+typedef enum
+{
     /*
      * Catch any fish as long as it totals up to the weight specified
      */
@@ -141,6 +148,7 @@ extern ByteTable mapSpawn;
 extern ByteTable mapLuck;
 extern Lore mapLore;
 extern int luck;
+extern Bait bait;
 
 /**
  * Loads the map from a specified location to memory

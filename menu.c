@@ -2,6 +2,7 @@
 
 int ex = 0;
 int last = 0;
+Bait bait = SPOON;
 
 void ret(int *sel)
 {
@@ -233,7 +234,7 @@ void keycodeTester()
 
 void testFishingMenu(int *sel)
 {
-    fishingMenu("Fishing C > Main menu > Developer > Action test > Fishing menu", (int[]){*sel, dummy}, dummyFunc, dummyFunc, dummyFunc, (Color[]){BLACK, WHITE});
+    fishingMenu("Fishing C > Main menu > Developer > Action test > Fishing menu", (int[]){*sel, dummy, dummy}, dummyFunc, dummyFunc, dummyFunc, (Color[]){BLACK, WHITE});
 }
 
 void testFishBattle()
@@ -1170,24 +1171,25 @@ int fishingMenu(char *title, int *defaults, void *fCast, void *fLore, void *fExi
     int sel = 0;
     while (1 < 2)
     {
-        MenuItem menu[8] =
+        MenuItem menu[9] =
             {
                 (MenuItem){fCast == &dummyFunc ? DISABLED_BUTTON : BUTTON, "Cast", &dummy, -1, NULL, fCast},
                 (MenuItem){SELECTOR, "Distance", (short *)defaults, 20, NULL, NULL},
                 (MenuItem){SELECTOR, "Angle", (short *)&defaults[1], 20, NULL, NULL},
+                (MenuItem){CHOICE, "Lure", (short *)&defaults[2], 3, (char *[]){"Spoon", "Worm", "Metal jig"}, NULL},
                 (MenuItem){profiles[activeProfile].progression.mode != CUSTOM ? BUTTON : DISABLED_BUTTON, "Save game", &dummy, -1, NULL, &saveActiveProfile},
                 (MenuItem){fLore == &dummyFunc ? DISABLED_BUTTON : BUTTON, "Lore", &dummy, -1, NULL, fLore},
                 (MenuItem){BUTTON, "Scouting map", &dummy, -1, NULL, &dummyFunc},
                 (MenuItem){BUTTON, "Give up", &dummy, -1, NULL, fExit},
                 (MenuItem){BUTTON, "Exit", &dummy, -1, NULL, fExit},
         };
-        int scoutIdx = 5;
-        int exitIdx = 6;
+        int scoutIdx = 6;
+        int exitIdx = 7;
         if (profiles[activeProfile].progression.mode == ARCADE)
         {
-            memcpy(&menu[3], &menu[5], sizeof(MenuItem) * 2);
-            scoutIdx = 3;
-            exitIdx = 4;
+            memcpy(&menu[4], &menu[5], sizeof(MenuItem) * 2);
+            scoutIdx = 4;
+            exitIdx = 5;
         }
         void (*menuPtr)(int *);
         void (*nargPtr)();
@@ -1225,7 +1227,7 @@ int fishingMenu(char *title, int *defaults, void *fCast, void *fLore, void *fExi
         {
             if (sel == exitIdx)
             {
-                sel = 6;
+                sel = 7;
             }
             break;
         }

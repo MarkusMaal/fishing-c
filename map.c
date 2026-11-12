@@ -483,7 +483,7 @@ void mapLoop(int mapId)
             break;
         if (profiles[activeProfile].progression.mode == DEMO)
         {
-            cast((int[]){tx, ty});
+            cast((int[]){tx, ty, SPOON});
             continue;
         }
 #ifdef __CYGWIN__
@@ -496,12 +496,12 @@ void mapLoop(int mapId)
         }
         SetConsoleTitle(oneLiner);
 #endif
-        int sel = fishingMenu(statusMessage, (int[]){tx, ty}, cast, profiles[activeProfile].progression.mode != CUSTOM ? loreDisplay : dummyFunc, exitMap, (Color[]){mapColor.bg, mapColor.fg});
-        if (sel == 6)
+        int sel = fishingMenu(statusMessage, (int[]){tx, ty, bait}, cast, profiles[activeProfile].progression.mode != CUSTOM ? loreDisplay : dummyFunc, exitMap, (Color[]){mapColor.bg, mapColor.fg});
+        if (sel == 7)
         {
             break;
         }
-        else if (sel == 7)
+        else if (sel == 8)
         {
             profiles[activeProfile].progression.playing = -2;
             break;
@@ -539,6 +539,7 @@ void cast(int *values)
     int roll;
     int tx = *values;
     int ty = values[1];
+    bait = values[2];
     profiles[activeProfile].progression.throws++;
     profiles[activeProfile].progression.totalLuck += luck;
     if (luck > 100)
@@ -559,6 +560,64 @@ void cast(int *values)
     tries = tx + 1;
     int playedCricketSound = false;
     int playedPopSound = false;
+    /*
+     * Metaljig - if a spot contains no fish, try nearby spots
+     * The search pattern looks like this:
+     *  4
+     * 1N2
+     *  3
+     */
+    if (bait == METALJIG)
+    {
+        if ((char)mapLuck.entries[spotId] < 1)
+            spotId--;
+        if (spotId < 0)
+            spotId = 0;
+        if ((char)mapLuck.entries[spotId] < 1)
+            spotId += 2;
+        if (spotId > 399)
+            spotId = 399;
+        if ((char)mapLuck.entries[spotId] < 1)
+            spotId += 19;
+        if (spotId > 399)
+            spotId = 399;
+        if ((char)mapLuck.entries[spotId] < 1)
+            spotId -= 40;
+        if (spotId < 0)
+            spotId = 0;
+        luck = luck * 90 / 100; // 90%
+    }
+
+    /*
+     * Worm - if a spot contains no fish, try nearby spots
+     * The search pattern looks like this:
+     * 1 N 2
+     *
+     * Less areas are scouted compared to metaljig, but the
+     * tradeoff is that the luck is decreased less
+     */
+    else if (bait == WORM)
+    {
+        if ((char)mapLuck.entries[spotId] < 1)
+            spotId -= 2;
+        if (spotId < 0)
+            spotId = 0;
+        if ((char)mapLuck.entries[spotId] < 1)
+            spotId += 4;
+        if (spotId > 399)
+            spotId = 399;
+        luck = luck * 95 / 100; // 95%
+    }
+
+    /*
+     * Spoon - increase luck, but reduce the number of available spots
+     */
+    else if (bait == WORM)
+    {
+        if (spotId % 2 == 0)
+            spotId++;
+        luck = luck * 105 / 100; // 105%
+    }
     for (int i = 0; i < tries; i++)
     {
         // printf("[DEBUG] Running roll attempt %d/%d\n", i + 1, tries);
