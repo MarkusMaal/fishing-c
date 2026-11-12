@@ -342,7 +342,11 @@ void mapLoop(int mapId)
     }
     else if (profiles[activeProfile].progression.mode == STORY)
     {
-        memcpy(mapSpawn.entries, profiles[activeProfile].localSpawnTable, 0x190);
+        int spawnCheck = 0;
+        for (int i = 0; i < 400; i++)
+            spawnCheck += (unsigned char)profiles[activeProfile].localSpawnTable[i];
+        if (spawnCheck != 0)
+            memcpy(mapSpawn.entries, profiles[activeProfile].localSpawnTable, 0x190);
     }
     LivewellData fish;
     while (true)
