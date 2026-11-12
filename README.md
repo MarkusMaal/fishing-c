@@ -89,20 +89,11 @@ The arcade mode scores data will get converted however and you can verify this b
 - Scoreboard
 - Arcade mode
 - Custom game mode
-- New map: Swampy Lake (custom mode environment)
-
-## Features to be implemented
-
-### Porting
-
-All features from the previous version have been ported!
-
-### New features
-
-- Maps: River Falls, Jelly Fun Place
+- New maps: Swampy Lake, River Falls, Jelly Fun Place (custom mode environment)
 - Lures
 - Player stats (stuff like how much fish you've caught in total, what's your luck been like, etc.)
-- Map editor (maybe in the future for release v2.1)
+- Map editor (in developer menu)
+
 
 ## Scouting map
 
