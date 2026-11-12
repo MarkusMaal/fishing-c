@@ -444,7 +444,7 @@ void mapLoop(int mapId)
         memcpy(profiles[activeProfile].localSpawnTable, mapSpawn.entries, 0x190);
         if (profiles[activeProfile].options.autosave && profiles[activeProfile].progression.mode != CUSTOM)
         {
-            saveProfile(profiles[activeProfile], activeProfile);
+            saveProfile(profiles[activeProfile], activeProfile, true);
         }
         if (profiles[activeProfile].options.storytell && (profiles[activeProfile].progression.mode != CUSTOM) && !profiles[activeProfile].progression.storiesTold[mapId] & 0x01)
         {

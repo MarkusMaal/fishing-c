@@ -12,7 +12,7 @@ typedef enum
     SPLASH
 } DemoState;
 
-int main();
+int main(int argc, char *argv[]);
 void titleScreen();
 void splashScreen();
 void demoPlay();

@@ -1,6 +1,6 @@
 #include "main.h"
 
-int main()
+int main(int argc, char *argv[])
 {
 #ifdef __CYGWIN__
     SetConsoleTitle("Fishing");
@@ -14,6 +14,15 @@ int main()
     }
     getScores();
     getMaps();
+    if (argc > 1 && strcmp(argv[1], "--convert") == 0)
+    {
+        for (int i = 0; i < 4; i++)
+            convertProfile(i);
+        printf("Profile conversion complete.\n");
+        convertProfile(-1);
+        printf("Scoreboard conversion complete.\n");
+        return 0;
+    }
     cprintf("", (Color[]){BLACK, BLACK, BLACK, WHITE});
     clearScreen();
     initSoundEngine();
@@ -107,6 +116,18 @@ void titleScreen()
     {
         rKey = readKey(true);
         time++;
+        if (strcmp(rKey, "backspace") == 0)
+        {
+            chcolor((Color[]){BLACK, WHITE});
+            locate(0, 0);
+            for (int i = 0; i < 999; i++)
+                printf("%-99s", "");
+            locate(0, 0);
+            showScores();
+            printf("\nPress any key to continue . . . ");
+            readKey(false);
+            clearScreen();
+        }
 #ifdef __CYGWIN__
         if (strcmp(rKey, "space") == 0 || strcmp(rKey, "32") == 0)
             break;

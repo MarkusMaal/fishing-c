@@ -27,6 +27,219 @@ ProfileHeader quickLoadProfile(int idx)
     return header;
 }
 
+void convertProfileSetting(char *key, char *value, int idx)
+{
+    if (strcmp(key, "set sin1") == 0)
+        strcpy(scoreboard[0].name, value);
+    else if (strcmp(key, "set sin2") == 0)
+        strcpy(scoreboard[1].name, value);
+    else if (strcmp(key, "set sin3") == 0)
+        strcpy(scoreboard[2].name, value);
+    else if (strcmp(key, "set sin4") == 0)
+        strcpy(scoreboard[3].name, value);
+    else if (strcmp(key, "set sin5") == 0)
+        strcpy(scoreboard[4].name, value);
+    else if (strcmp(key, "sd") == 0)
+        strcpy(profiles[idx].profileHeader.saveDate, value);
+    else if (strcmp(key, "st") == 0)
+        strcpy(profiles[idx].profileHeader.saveTime, value);
+    else if ((strcmp(key, "josen") == 0) || (strcmp(key, "todone") == 0) || (strcmp(key, "font") == 0) || (strcmp(key, "goal") == 0))
+        return;
+    else if (strcmp(key, "unlock2") == 0)
+    {
+        if (strcmp(value, "true") == 0)
+            profiles[idx].progression.mapUnlocks[0] |= 0x01;
+    }
+    else if (strcmp(key, "unlock3") == 0)
+    {
+        if (strcmp(value, "true") == 0)
+            profiles[idx].progression.mapUnlocks[1] |= 0x01;
+    }
+    else if (strcmp(key, "unlock4") == 0)
+    {
+        if (strcmp(value, "true") == 0)
+            profiles[idx].progression.mapUnlocks[2] |= 0x01;
+    }
+    else if (strcmp(key, "unlock5") == 0)
+    {
+        if (strcmp(value, "true") == 0)
+            profiles[idx].progression.mapUnlocks[0] |= 0x04;
+    }
+    else if (strcmp(key, "unlock6") == 0)
+    {
+        if (strcmp(value, "true") == 0)
+            profiles[idx].progression.mapUnlocks[0] |= 0x02;
+    }
+    else if (strcmp(key, "playing") == 0)
+    {
+        strcpy(profiles[idx].progression.mapName, "notmenu");
+    }
+    else if (strcmp(key, "level") == 0)
+    {
+        if (strcmp(value, "mlake") == 0)
+        {
+            strcpy(profiles[idx].progression.mapName, mapsList[2].file);
+            profiles[idx].progression.playing = mapsList[2].idx;
+        }
+        else if (strcmp(value, "lake") == 0)
+        {
+            strcpy(profiles[idx].progression.mapName, mapsList[0].file);
+            profiles[idx].progression.playing = mapsList[0].idx;
+        }
+        else if (strcmp(value, "river") == 0)
+        {
+            strcpy(profiles[idx].progression.mapName, mapsList[1].file);
+            profiles[idx].progression.playing = mapsList[1].idx;
+        }
+        else if (strcmp(value, "sea") == 0)
+        {
+            strcpy(profiles[idx].progression.mapName, mapsList[mapsCount - 2].file);
+            profiles[idx].progression.playing = mapsList[mapsCount - 2].idx;
+        }
+        else
+        {
+            strcpy(profiles[idx].progression.mapName, "menu");
+        }
+    }
+    else if (strcmp(key, "dd") == 0)
+    {
+        if (strcmp(value, "Easy") == 0)
+            profiles[idx].options.difficulty = EASY;
+        else if (strcmp(value, "Normal") == 0)
+            profiles[idx].options.difficulty = NORMAL;
+        else if (strcmp(value, "Hard") == 0)
+            profiles[idx].options.difficulty = HARD;
+        else if (strcmp(value, "Super Hard") == 0)
+            profiles[idx].options.difficulty = SUPER_HARD;
+    }
+    else if (strcmp(key, "name") == 0)
+    {
+        strcpy(profiles[idx].profileHeader.qName, value);
+        strcpy(profiles[idx].options.name, value);
+    }
+    else if (strcmp(key, "em") == 0)
+        profiles[idx].options.music = strcmp(value, "true") == 0;
+    else if (strcmp(key, "efx") == 0)
+        profiles[idx].options.sfx = strcmp(value, "true") == 0;
+    else if (strcmp(key, "storytell") == 0)
+        profiles[idx].options.storytell = strcmp(value, "true") == 0;
+    else if (strcmp(key, "uas") == 0)
+        profiles[idx].options.autosave = strcmp(value, "true") == 0;
+    else if (strcmp(key, "story1") == 0)
+        profiles[idx].progression.storiesTold[0] = strcmp(value, "true") == 0 ? 0x01 : 0x00;
+    else if (strcmp(key, "story2") == 0)
+        profiles[idx].progression.storiesTold[1] = strcmp(value, "true") == 0 ? 0x01 : 0x00;
+    else if (strcmp(key, "story3") == 0)
+        profiles[idx].progression.storiesTold[2] = strcmp(value, "true") == 0 ? 0x01 : 0x00;
+    else if (strcmp(key, "story4") == 0)
+        profiles[idx].progression.storiesTold[3] = strcmp(value, "true") == 0 ? 0x01 : 0x00;
+    else if (strcmp(key, "story5") == 0)
+        profiles[idx].progression.storiesTold[4] = strcmp(value, "true") == 0 ? 0x01 : 0x00;
+    else if (strcmp(key, "story6") == 0)
+        profiles[idx].progression.storiesTold[5] = strcmp(value, "true") == 0 ? 0x01 : 0x00;
+    else if (strcmp(key, "story7") == 0)
+        profiles[idx].progression.storiesTold[6] = strcmp(value, "true") == 0 ? 0x01 : 0x00;
+    else if (strcmp(key, "solmn") == 0)
+    {
+        if (strcmp(value, "find_me_if_you_can") == 0)
+            profiles[idx].progression.solmn = FIND_ME_IF_YOU_CAN;
+        else if (strcmp(value, "ready") == 0)
+            profiles[idx].progression.solmn = READY;
+        else if (strcmp(value, "true") == 0)
+            profiles[idx].progression.solmn = SOLMN_TRUE;
+    }
+    else
+    {
+        printf("No string match, checking for int matches!\n");
+        int vint = atoi(value);
+        if (strcmp(key, "set score1") == 0)
+            scoreboard[0].score = (unsigned int)vint;
+        else if (strcmp(key, "set score2") == 0)
+            scoreboard[1].score = (unsigned int)vint;
+        else if (strcmp(key, "set score3") == 0)
+            scoreboard[2].score = (unsigned int)vint;
+        else if (strcmp(key, "set score4") == 0)
+            scoreboard[3].score = (unsigned int)vint;
+        else if (strcmp(key, "set score5") == 0)
+            scoreboard[4].score = (unsigned int)vint;
+        else if (strcmp(key, "fjkaal") == 0)
+            profiles[idx].progression.weight = vint;
+        else if (strcmp(key, "luckamount") == 0)
+            profiles[idx].progression.throws = vint;
+        else if (strcmp(key, "luckint") == 0)
+            profiles[idx].progression.totalLuck = vint;
+        else if (strcmp(key, "goaly") == 0)
+            profiles[idx].progression.goalWeight = vint;
+        else if (strcmp(key, "rod") == 0)
+            profiles[idx].options.rodColor = (RColor)vint;
+        else
+            printf("No matches for key found!\n");
+    }
+}
+
+void convertProfile(int idx)
+{
+    initProfile(idx);
+    activeProfile = idx;
+    char buf[32];
+    if (idx >= 0)
+    {
+        snprintf(buf, 32, "save/data%d.save", idx + 1);
+    }
+    else if (idx == -1)
+    {
+        strcpy(buf, "save/scores.save");
+    }
+    FILE *infile;
+    infile = fopen(buf, "rb");
+    if (infile == NULL)
+        return;
+    char valBuf[256];
+    fseek(infile, 0, SEEK_END);
+    size_t fSize = ftell(infile);
+    fseek(infile, 0, SEEK_SET);
+    buf[0] = '\0';
+    for (int i = 0; i < 256; i++)
+        valBuf[i] = '\0';
+    char isVal = 0;
+    for (size_t i = 0; i < fSize; i++)
+    {
+        char c;
+        fread(&c, 1, 1, infile);
+        if (c == '=')
+            isVal = 1;
+        else if (c == '\r' || c == '\n')
+        {
+            isVal = 0;
+            if (buf[0] != '\0' && buf[0] != ';')
+            {
+                printf("Parsing tokens: key: %s; value: %s\n", buf, valBuf);
+                convertProfileSetting(buf, valBuf, idx);
+            }
+            buf[0] = '\0';
+            for (int i = 0; i < 256; i++)
+                valBuf[i] = '\0';
+            continue;
+        }
+        else if (c == ',' && isVal)
+            continue;
+        else
+        {
+            strcat(isVal ? valBuf : buf, &c);
+            if (isVal && valBuf[strlen(valBuf) - 1] == '\1')
+                valBuf[strlen(valBuf) - 1] = '\0';
+        }
+    }
+    if (idx >= 0)
+    {
+        saveProfile(profiles[idx], idx, false);
+    }
+    else
+    {
+        trySaveScores();
+    }
+}
+
 int loadProfile(int idx)
 {
     currentTime = clock();
@@ -64,19 +277,22 @@ int loadProfile(int idx)
     loadStats(activeProfile);
     return 0;
 }
-void saveProfile(PlayerProfile profile, int idx)
+void saveProfile(PlayerProfile profile, int idx, int writeDate)
 {
     playerStats[activeProfile].saveCount++;
     playerStats[activeProfile].playTime += (clock() - currentTime);
-    currentTime = clock();
-    time_t now = time(NULL);        // Get current time
-    struct tm *t = localtime(&now); // Convert to local time structure
-    for (int i = 0; i < 0x20; i++)
+    if (writeDate)
     {
-        profile.profileHeader.qName[i] = profile.options.name[i];
+        currentTime = clock();
+        time_t now = time(NULL);        // Get current time
+        struct tm *t = localtime(&now); // Convert to local time structure
+        for (int i = 0; i < 0x20; i++)
+        {
+            profile.profileHeader.qName[i] = profile.options.name[i];
+        }
+        snprintf(profile.profileHeader.saveDate, 32, "%02d.%02d.%04d", t->tm_mday, t->tm_mon + 1, t->tm_year + 1900);
+        snprintf(profile.profileHeader.saveTime, 32, "%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec);
     }
-    snprintf(profile.profileHeader.saveDate, 32, "%02d.%02d.%04d", t->tm_mday, t->tm_mon + 1, t->tm_year + 1900);
-    snprintf(profile.profileHeader.saveTime, 32, "%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec);
     DIR *dir = opendir("save");
     if (ENOENT == errno)
     {
@@ -136,7 +352,7 @@ void saveActiveProfile()
            profiles[activeProfile].options.name,
            profiles[activeProfile].profileHeader.saveDate,
            profiles[activeProfile].profileHeader.saveTime);
-    saveProfile(profiles[activeProfile], activeProfile);
+    saveProfile(profiles[activeProfile], activeProfile, true);
     clearScreen();
 }
 

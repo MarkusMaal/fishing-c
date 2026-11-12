@@ -109,8 +109,10 @@ extern int activeProfile;
 extern unsigned long currentTime;
 
 ProfileHeader quickLoadProfile(int idx);
+void convertProfileSetting(char *key, char *value, int idx);
+void convertProfile(int idx);
 int loadProfile(int idx);
-void saveProfile(PlayerProfile profile, int idx);
+void saveProfile(PlayerProfile profile, int idx, int writeDate);
 void initProfile(int idx);
 void saveActiveProfile();
 void profileMenu();

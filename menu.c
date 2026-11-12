@@ -869,7 +869,7 @@ void playMap(int *sel)
     }
     playSound("snd/menu_bg.mp3", 1);
     if (profiles[activeProfile].options.autosave)
-        saveProfile(profiles[activeProfile], activeProfile);
+        saveProfile(profiles[activeProfile], activeProfile, true);
     clearScreen();
 }
 
