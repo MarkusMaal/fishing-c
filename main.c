@@ -106,7 +106,7 @@ void titleScreen()
     }
 
     locate(16, padSize + 7);
-    printf("Fishing C 2.0");
+    printf("Fishing C 2.1");
 
     char *rKey;
     int even = true;
