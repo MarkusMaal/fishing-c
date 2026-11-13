@@ -254,6 +254,7 @@ void testFishBattle()
     clearScreen();
 
     printf("\nResults:\n\nWeight: %d g\nSize: %d cm\n\nPress any key to continue . . . ", fish.largeUnits ? *results * 1000 : *results, results[1]);
+    free(results);
     readKey(false);
 }
 
@@ -418,8 +419,12 @@ void credits()
         usleep(66667);
         clearScreen();
         sleep(2);
+        fclose(copyFile);
     }
     Color colors[10] = {BLACK, LBLACK, BLACK, WHITE, BLACK, LWHITE, BLACK, WHITE, BLACK, LBLACK};
+    char *obS[13];
+    for (int i = 0; i < 13; i++)
+        obS[i] = getObString(i);
     if (profiles[activeProfile].progression.solmn != FIND_ME_IF_YOU_CAN)
     {
         clearScreen();
@@ -432,9 +437,9 @@ void credits()
                 printf("     \n");
             }
             if (profiles[activeProfile].progression.solmn == READY)
-                printf("%52s\n%50s\n", getObString(3), getObString(4));
+                printf("%52s\n%50s\n", obS[3], obS[4]);
             else
-                printf("%52s\n%52s.\n%47s\n", getObString(0), getObString(1), getObString(2));
+                printf("%52s\n%52s.\n%47s\n", obS[0], obS[1], obS[2]);
             if (cIdx != 4)
                 usleep(66667);
             else
@@ -446,18 +451,20 @@ void credits()
         {
             clearScreen();
             printf("\n%s %s %s %s\n%s %s\n\n%s %s\n\nPress any key to continue . . . ",
-                   getObString(5),
-                   getObString(6),
-                   getObString(7),
-                   getObString(8),
-                   getObString(9),
-                   getObString(10),
-                   getObString(11),
-                   getObString(12));
+                   obS[5],
+                   obS[6],
+                   obS[7],
+                   obS[8],
+                   obS[9],
+                   obS[10],
+                   obS[11],
+                   obS[12]);
             readKey(false);
             printf("\n");
         }
     }
+    for (int i = 0; i < 13; i++)
+        free(obS[i]);
     sleep(2);
     stopSound();
     chcolor((Color[]){BLACK, WHITE});

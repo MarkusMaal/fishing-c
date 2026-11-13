@@ -16,6 +16,7 @@ void getScores()
     fseek(scoreFile, 4, SEEK_SET);
     ScoreEntry storedScores[5];
     fread(&storedScores, sizeof(ScoreEntry) * 5, 1, scoreFile);
+    fclose(scoreFile);
     if (crc32((char *)storedScores, sizeof(ScoreEntry) * 5) != storedsum) // score table is corrupt, disregard it
     {
         initScores();

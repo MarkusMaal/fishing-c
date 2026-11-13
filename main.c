@@ -49,7 +49,14 @@ int main(int argc, char *argv[])
 
 void splashScreen()
 {
-    Color colors[10] = {BLACK, LBLACK, BLACK, WHITE, BLACK, LWHITE, BLACK, WHITE, BLACK, LBLACK};
+    Color *colors = malloc(sizeof(Color) * 10);
+    for (int i = 0; i < 10; i++)
+        colors[i] = BLACK;
+    colors[1] = LBLACK;
+    colors[3] = WHITE;
+    colors[5] = LWHITE;
+    colors[7] = WHITE;
+    colors[9] = LBLACK;
     FILE *copyFile = fopen("txt/splash.txt", "r");
     char *buffer = 0;
     long length;
@@ -74,6 +81,7 @@ void splashScreen()
         else
             sleep(1);
     }
+    free(colors);
     clearScreen();
     sleep(1);
     if (buffer)

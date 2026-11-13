@@ -410,7 +410,11 @@ void stopSound()
     thread_exit = 0;
     /*if (profiles[activeProfile].options.music)
     {*/
-    running_sounds(STOP, bgm);
+    for (int i = 0; i < 999; i++)
+    {
+        if (get_state(bgm) == PLAYING)
+            running_sounds(STOP, bgm);
+    }
     //}
 }
 
@@ -443,6 +447,8 @@ void getMaps()
     }
     mapsCount = rStruct.chunkCount;
     printf("%d\n", mapsCount);
+    if (mapsList)
+        free(mapsList);
     mapsList = malloc(rStruct.chunkCount * rStruct.chunkSize);
     for (int i = 0; i < rStruct.chunkCount; i++)
     {

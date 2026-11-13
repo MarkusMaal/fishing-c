@@ -230,6 +230,7 @@ void convertProfile(int idx)
                 valBuf[strlen(valBuf) - 1] = '\0';
         }
     }
+    fclose(infile);
     if (idx >= 0)
     {
         saveProfile(profiles[idx], idx, false);

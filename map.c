@@ -202,6 +202,7 @@ int loadMap(char *fileName)
     if (profiles[activeProfile].progression.mode == DEMO)
     {
     }
+    fclose(infile);
     return true;
 }
 
@@ -648,12 +649,14 @@ void cast(int *values)
                         if (*result != 0)
                         {
                             strcpy(profiles[activeProfile].progression.mapName, "win"); // we beat the boss
+                            free(result);
                             return;
                         }
                         else
                         {
                             snprintf(buf, 32, "snd/%s", *mapMusic.filename); // lost to boss, continue playing
                             playSound(buf, 1);
+                            free(result);
                             return;
                         }
                     }
@@ -748,6 +751,7 @@ void cast(int *values)
                     profiles[activeProfile].progression.throws += 999;
                 }
                 profiles[activeProfile].progression.weight += *result * (fish.largeUnits ? 1000 : 1);
+                free(result);
                 return;
             }
         }

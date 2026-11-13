@@ -24,6 +24,7 @@ FishData loadFish(char *fileName)
         }
         fseek(infile, next, SEEK_SET);
     }
+    fclose(infile);
     return fish;
 }
 LivewellData loadFishMeta(char *fileName)
@@ -57,18 +58,23 @@ LivewellData loadFishMeta(char *fileName)
         }
         fseek(infile, next, SEEK_SET);
     }
+    fclose(infile);
     return lwell;
 }
 
 int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileName)
 {
+    int *result = malloc(8);
+    *result = 0;
+    result[1] = 0;
     if (fish.fightLength == 0)
     {
         clearScreen();
         playSound("snd/error.mp3", false);
         printf("\nFatal error\n\nCannot access file \"%s\"\n\nNo result data will be returned from this catch\n\nPress any key to continue . . . ", fileName);
-        readKey(false);
-        return (int[]){0, 0};
+        if (profiles[activeProfile].progression.mode != DEMO)
+            readKey(false);
+        return result;
     }
     int fishX = fish.spawnX;
     int fishY = fish.spawnY;
@@ -291,7 +297,7 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
             }
             if (profiles[activeProfile].progression.mode == DEMO)
                 sleep(1);
-            return (int[]){0, 0};
+            return result;
         }
         if ((char)fish.attackPatternSteps[i] > -1)
         {
@@ -345,5 +351,7 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
     if (profiles[activeProfile].progression.mode == DEMO)
         sleep(1);
     clearScreen();
-    return (int[]){weight, length};
+    *result = weight;
+    result[1] = length;
+    return result;
 }

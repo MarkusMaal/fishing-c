@@ -22,6 +22,7 @@ int loadStats(int idx)
     if (onlineSum != offlineSum)
     {
         initStats(idx);
+        fclose(infile);
         return 1;
     }
     fclose(infile);
