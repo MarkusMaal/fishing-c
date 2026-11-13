@@ -407,6 +407,10 @@ void *loopSound(void *arg)
 
 void playSound(char *fileName, char loop)
 {
+    FILE *f = fopen(fileName, "rb");
+    if (f == NULL)
+        return;
+    fclose(f);
     if (loop)
     {
         if (profiles[activeProfile].progression.solmn == SOLMN_TRUE && rand() % 8 == 1)
@@ -440,6 +444,8 @@ void stopSound()
     thread_exit = 0;
     /*if (profiles[activeProfile].options.music)
     {*/
+    if (!bgm)
+        return;
     for (int i = 0; i < 999; i++)
     {
         if (get_state(bgm) == PLAYING)
