@@ -335,7 +335,7 @@ void credits()
     stopSound();
     clearScreen();
     chcolor((Color[]){BLACK, LWHITE});
-    playSound("snd/credits_roll.mp3", false);
+    playSound("snd/credits_roll.mp3", true);
     for (int i = 0; i < 999; i++)
         printf("\n");
     sleep(1);
@@ -424,7 +424,11 @@ void credits()
     Color colors[10] = {BLACK, LBLACK, BLACK, WHITE, BLACK, LWHITE, BLACK, WHITE, BLACK, LBLACK};
     char *obS[13];
     for (int i = 0; i < 13; i++)
+    {
         obS[i] = getObString(i);
+        if (strlen(obS[i]) == 0)
+            goto exitCredits;
+    }
     if (profiles[activeProfile].progression.solmn != FIND_ME_IF_YOU_CAN)
     {
         clearScreen();
@@ -464,7 +468,11 @@ void credits()
         }
     }
     for (int i = 0; i < 13; i++)
-        free(obS[i]);
+    {
+        if (obS[i])
+            free(obS[i]);
+    }
+exitCredits:
     sleep(2);
     stopSound();
     chcolor((Color[]){BLACK, WHITE});
@@ -902,9 +910,11 @@ void customMenu(int *sel)
     LivewellData fish[99];
     if (dr == NULL)
     {
+        clearScreen();
         printf("\nFishing C > Main menu > Custom game\n\nCould not open maps directory\n\nPress any key to continue . . . ");
         readKey(false);
         ret(sel);
+        return;
     }
     int fishCount = 0;
     int localMapsCount = 0;

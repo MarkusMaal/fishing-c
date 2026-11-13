@@ -209,6 +209,8 @@ int loadMap(char *fileName)
 void drawMap(int dx, int dy)
 {
     clearScreen();
+    locate(0, 0);
+    printf("            ");
     locate((mapStatus.messages[0].idx == 3 && (profiles[activeProfile].progression.mode != CUSTOM)) ? 2 : 0, 0);
     int drawnChars = 0;
     int bait_y = (float)dy / 20.0f * (float)(mapWater.h - 2.0f);

@@ -71,7 +71,7 @@ int *fightFish(FishData fish, int luck, PlayerDifficulty difficulty, char *fileN
     {
         clearScreen();
         playSound("snd/error.mp3", false);
-        printf("\nFatal error\n\nCannot access file \"%s\"\n\nNo result data will be returned from this catch\n\nPress any key to continue . . . ", fileName);
+        printf("       \nFatal error\n\nCannot access file \"%s\"\n\nNo result data will be returned from this catch\n\nPress any key to continue . . . ", fileName);
         if (profiles[activeProfile].progression.mode != DEMO)
             readKey(false);
         return result;

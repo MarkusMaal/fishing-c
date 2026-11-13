@@ -81,10 +81,12 @@ extern int mapsCount;
 extern t_sound *bgm;
 extern pthread_t bgmThread;
 extern pthread_t kbdThread;
+extern pthread_t sfxThread;
 extern volatile int thread_exit;
 extern volatile int kthread_exit; // keyboard thread
 extern short dummy;
 extern int enableDevMenu;
+extern volatile int playingSounds;
 
 /**
  * Reads a key from the user and returns it as a string value
@@ -124,6 +126,8 @@ void initSoundEngine();
  * Unloads the sound engine. Should only be called when closing the program.
  */
 void unloadSoundEngine();
+
+void *playSfx(void *arg);
 
 /**
  * Plays the specified sound file

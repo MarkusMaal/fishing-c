@@ -7,8 +7,10 @@ short dummy = 0;
 t_sound *bgm = NULL;
 pthread_t bgmThread;
 pthread_t kbdThread;
+pthread_t sfxThread;
 volatile int thread_exit = 1;
 volatile int kthread_exit = -1;
+volatile int playingSounds = 0;
 int enableDevMenu = false;
 
 char *readKey(int timeout)
@@ -374,15 +376,32 @@ void *waitKey(void *arg)
     kthread_exit = getc(stdin);
     return NULL;
 }
+
+void *playSfx(void *arg)
+{
+    char *fileName = (char *)arg;
+    play_sync(fileName, 100.0);
+    playingSounds--;
+    if (playingSounds < 0)
+        playingSounds = 0;
+    pthread_exit(NULL);
+    return NULL;
+}
+
 void *loopSound(void *arg)
 {
     bgm = play_async(arg, 100.0);
     while (get_state(bgm) == PLAYING)
     {
         sleep(1);
+        if (!profiles[activeProfile].options.music)
+            return NULL;
     }
     if (thread_exit == 0)
+    {
+        pthread_exit(NULL);
         return NULL;
+    }
     return loopSound(arg);
 }
 
@@ -395,13 +414,24 @@ void playSound(char *fileName, char loop)
         if (!profiles[activeProfile].options.music)
             return;
         thread_exit = 1;
+        if (bgmThread)
+        {
+            stopSound();
+            pthread_join(bgmThread, NULL);
+        }
         pthread_create(&bgmThread, NULL, loopSound, fileName);
     }
     else
     {
         if (!profiles[activeProfile].options.sfx)
             return;
-        play_async(fileName, 100.0);
+        if (sfxThread && playingSounds > 32)
+        {
+            pthread_join(sfxThread, NULL);
+            playingSounds = 0;
+        }
+        playingSounds++;
+        pthread_create(&sfxThread, NULL, playSfx, fileName);
     }
 }
 
