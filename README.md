@@ -2,7 +2,7 @@
 
 **WARNING**: The current Linux release has memory leak issues. Please don't use it and wait for version 2.1 release!
 
-Text-based fishing game, which is a port of my old batch game "Fishing Batch" to the C programming language. The features from that game have all been ported over, but some unique features are planned for future updates.
+Text-based fishing game, which is a port of my old batch game "Fishing Batch" to the C programming language. The features from that game have all been ported over and some unique features have also been added.
 
 However, unlike the original batch game, this version makes heavy use of data-driving. The following things are data-driven:
 
@@ -34,6 +34,8 @@ However, unlike the original batch game, this version makes heavy use of data-dr
     - Settings
     - Unlocks
     - "Stories told"
+    - Statistics
+- High scores for aracde mode
 
 ## Compiling
 
